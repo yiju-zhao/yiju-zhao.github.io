@@ -1,1 +1,882 @@
-Hello World
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yiju Zhao 的项目与架构图</title>
+<meta name="description" content="Yiju Zhao 的 26 个项目,按价值排序分成 5 组,每个项目一张架构图,公开仓附 GitHub 链接。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<header class="nav">
+<div class="container nav__in">
+<a class="wordmark" href="#top" aria-label="Yiju Zhao,回到顶部">Yiju Zhao</a>
+<nav class="nav__links" aria-label="项目分组">
+<a href="#agent">Agent 工具链</a>
+<a href="#research">模型与系统研究</a>
+<a href="#product">产品</a>
+<a href="#invest">投资研究</a>
+<a href="#career">求职</a>
+<a href="#others">其他公开仓</a>
+</nav>
+<a class="key key--s" href="https://github.com/yiju-zhao" rel="noopener">GitHub</a>
+</div>
+</header>
+<main id="main">
+<section class="hero" id="top">
+<div class="container hero__in">
+<div class="hero__text">
+<h1>26 个项目,<br>每个一张架构图</h1>
+<p class="lead">按价值排序的开发入口,公开仓直接给 GitHub 链接。</p>
+<p class="hero__actions">
+<a class="key key--primary" href="#p1">从第 1 个看起</a>
+<a class="key" href="#others">其他公开仓</a>
+</p>
+</div>
+<figure class="hero__fig cut">
+<div class="dg-wrap" tabindex="0" role="group" aria-label="这个主页的来源 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="hero-title hero-desc">
+<title id="hero-title">这个主页的来源 架构</title>
+<desc id="hero-desc">多台机器上的 agent session 汇总到 agent-pm 看板,看板上的项目经 build.mjs 生成本页。</desc>
+<defs><marker id="hero-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#hero-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#hero-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#hero-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">Agent session</text><text class="dg-sub" x="88" y="57" text-anchor="middle">多台机器</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="41" text-anchor="middle">agent-pm 看板</text><text class="dg-sub" x="296" y="57" text-anchor="middle">26 个项目</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">build.mjs</text><text class="dg-sub" x="504" y="57" text-anchor="middle">手动同步</text>
+<rect class="dg-node dg-node--focal" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">本页</text><text class="dg-sub" x="712" y="57" text-anchor="middle">26 张架构图</text>
+</svg>
+</div>
+<figcaption>蓝框是核心节点,虚线是待定或未完成。</figcaption>
+</figure>
+</div>
+</section>
+<section class="group" id="agent" aria-labelledby="agent-h">
+<div class="container">
+<header class="group__head">
+<h2 id="agent-h">Agent 工具链</h2>
+<p class="lead">看板、harness、知识库和 skill 蒸馏,公开仓集中在这一组。</p>
+</header>
+<ol class="items" start="1">
+<li class="item" id="p1">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">01</span>
+<h3>agent-pm</h3>
+<p>把多台机器上的 agent session 汇总到一个中心,按项目看进度。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd><a href="https://github.com/yiju-zhao/agent-pm" rel="noopener">GitHub 仓库</a></dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="agent-pm 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="agent-pm-title agent-pm-desc">
+<title id="agent-pm-title">agent-pm 架构</title>
+<desc id="agent-pm-desc">把多台机器上的 agent session 汇总到一个中心,按项目看进度。</desc>
+<defs><marker id="agent-pm-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H173.33333333333334 Q181.33333333333334,80 181.33333333333334,88 V96 Q181.33333333333334,104 189.33333333333334,104 H224" marker-end="url(#agent-pm-arrow)"/>
+<path class="dg-edge" d="M160,152 H194.66666666666666 Q202.66666666666666,152 202.66666666666666,144 V136 Q202.66666666666666,128 210.66666666666666,128 H224" marker-end="url(#agent-pm-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#agent-pm-arrow)"/>
+<path class="dg-edge" d="M576,104 H589.3333333333334 Q597.3333333333334,104 597.3333333333334,96 V52 Q597.3333333333334,44 605.3333333333334,44 H640" marker-end="url(#agent-pm-arrow)"/>
+<path class="dg-edge" d="M576,116 H640" marker-end="url(#agent-pm-arrow)"/>
+<path class="dg-edge" d="M576,128 H610.6666666666666 Q618.6666666666666,128 618.6666666666666,136 V180 Q618.6666666666666,188 626.6666666666666,188 H640" marker-end="url(#agent-pm-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="84" text-anchor="middle">herdr 快照</text>
+<rect class="dg-node" x="16" y="128" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="149" text-anchor="middle">对话文件</text><text class="dg-sub" x="88" y="165" text-anchor="middle">Claude Code 与 Codex</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="113" text-anchor="middle">采集器</text><text class="dg-sub" x="296" y="129" text-anchor="middle">每台机器一个</text>
+<rect class="dg-node dg-node--focal" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="113" text-anchor="middle">中心服务</text><text class="dg-sub" x="504" y="129" text-anchor="middle">SQLite, HTTP API</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="48" text-anchor="middle">看板</text>
+<rect class="dg-node" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="113" text-anchor="middle">MCP 工具</text><text class="dg-sub dg-sub--mono" x="712" y="129" text-anchor="middle">pm_*</text>
+<rect class="dg-node" x="640" y="164" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="185" text-anchor="middle">模型预填</text><text class="dg-sub" x="712" y="201" text-anchor="middle">阶段与优先级</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p2">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">02</span>
+<h3>open-evo:原生 harness 与网关用量</h3>
+<p>给 Pi、Codex、dsh 各配原生 harness,并在常驻网关记录用量。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="open-evo:原生 harness 与网关用量 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="open-evo-harness-title open-evo-harness-desc">
+<title id="open-evo-harness-title">open-evo:原生 harness 与网关用量 架构</title>
+<desc id="open-evo-harness-desc">给 Pi、Codex、dsh 各配原生 harness,并在常驻网关记录用量。</desc>
+<defs><marker id="open-evo-harness-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,104 H173.33333333333334 Q181.33333333333334,104 181.33333333333334,96 V52 Q181.33333333333334,44 189.33333333333334,44 H224" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M160,116 H224" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M160,128 H194.66666666666666 Q202.66666666666666,128 202.66666666666666,136 V180 Q202.66666666666666,188 210.66666666666666,188 H224" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M368,44 H381.3333333333333 Q389.3333333333333,44 389.3333333333333,52 V96 Q389.3333333333333,104 397.3333333333333,104 H432" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M368,188 H402.6666666666667 Q410.6666666666667,188 410.6666666666667,180 V136 Q410.6666666666667,128 418.6666666666667,128 H432" marker-end="url(#open-evo-harness-arrow)"/>
+<path class="dg-edge" d="M576,116 H640" marker-end="url(#open-evo-harness-arrow)"/>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="120" text-anchor="middle">基线任务</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">Pi harness</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="120" text-anchor="middle">Codex harness</text>
+<rect class="dg-node" x="224" y="164" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="185" text-anchor="middle">dsh harness</text><text class="dg-sub dg-sub--mono" x="296" y="201" text-anchor="middle">max_turns</text>
+<rect class="dg-node dg-node--focal" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="120" text-anchor="middle">常驻网关</text>
+<rect class="dg-node" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="120" text-anchor="middle">用量统计</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p3">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">03</span>
+<h3>open-evo:演进流水线并发</h3>
+<p>把串行的 Teacher 回合与评估改成并发执行、顺序提交,并提前淘汰。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>探索</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="open-evo:演进流水线并发 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="open-evo-pipeline-title open-evo-pipeline-desc">
+<title id="open-evo-pipeline-title">open-evo:演进流水线并发 架构</title>
+<desc id="open-evo-pipeline-desc">把串行的 Teacher 回合与评估改成并发执行、顺序提交,并提前淘汰。</desc>
+<defs><marker id="open-evo-pipeline-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#open-evo-pipeline-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#open-evo-pipeline-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#open-evo-pipeline-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">Teacher 回合</text><text class="dg-sub" x="88" y="57" text-anchor="middle">原为串行</text>
+<rect class="dg-node dg-node--focal" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">并发评估</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">早期淘汰</text><text class="dg-sub" x="504" y="57" text-anchor="middle">三档</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="48" text-anchor="middle">顺序提交</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p4">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">04</span>
+<h3>Noteweaver</h3>
+<p>在原生 Obsidian 上管理和生成由 schema 驱动的知识库。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd><a href="https://github.com/yiju-zhao/noteweaver" rel="noopener">GitHub 仓库</a></dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="Noteweaver 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="noteweaver-title noteweaver-desc">
+<title id="noteweaver-title">Noteweaver 架构</title>
+<desc id="noteweaver-desc">在原生 Obsidian 上管理和生成由 schema 驱动的知识库。</desc>
+<defs><marker id="noteweaver-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H173.33333333333334 Q181.33333333333334,44 181.33333333333334,52 V60 Q181.33333333333334,68 189.33333333333334,68 H224" marker-end="url(#noteweaver-arrow)"/>
+<path class="dg-edge" d="M160,116 H194.66666666666666 Q202.66666666666666,116 202.66666666666666,108 V100 Q202.66666666666666,92 210.66666666666666,92 H224" marker-end="url(#noteweaver-arrow)"/>
+<path class="dg-edge" d="M368,68 H381.3333333333333 Q389.3333333333333,68 389.3333333333333,60 V52 Q389.3333333333333,44 397.3333333333333,44 H432" marker-end="url(#noteweaver-arrow)"/>
+<path class="dg-edge" d="M368,92 H402.6666666666667 Q410.6666666666667,92 410.6666666666667,100 V108 Q410.6666666666667,116 418.6666666666667,116 H432" marker-end="url(#noteweaver-arrow)"/>
+<path class="dg-edge" d="M576,44 H589.3333333333334 Q597.3333333333334,44 597.3333333333334,52 V60 Q597.3333333333334,68 605.3333333333334,68 H640" marker-end="url(#noteweaver-arrow)"/>
+<path class="dg-edge" d="M576,116 H610.6666666666666 Q618.6666666666666,116 618.6666666666666,108 V100 Q618.6666666666666,92 626.6666666666666,92 H640" marker-end="url(#noteweaver-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="48" text-anchor="middle">Obsidian 插件</text>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="113" text-anchor="middle">Agent 插件</text><text class="dg-sub" x="88" y="129" text-anchor="middle">9 个 skill</text>
+<rect class="dg-node dg-node--focal" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">TypeScript 内核</text><text class="dg-sub" x="296" y="93" text-anchor="middle">校验与变更计划</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">Obsidian 适配器</text><text class="dg-sub" x="504" y="57" text-anchor="middle">日常编辑</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="113" text-anchor="middle">离线适配器</text><text class="dg-sub" x="504" y="129" text-anchor="middle">CI</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="77" text-anchor="middle">知识库 vault</text><text class="dg-sub dg-sub--mono" x="712" y="93" text-anchor="middle">pages/ evidence/</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p5">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">05</span>
+<h3>cangjie-skill</h3>
+<p>把书、长视频、播客蒸馏成 Agent Skill,再用装与不装的对照实测。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd><a href="https://github.com/yiju-zhao/cangjie-skill" rel="noopener">GitHub 仓库</a></dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="cangjie-skill 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="cangjie-skill-title cangjie-skill-desc">
+<title id="cangjie-skill-title">cangjie-skill 架构</title>
+<desc id="cangjie-skill-desc">把书、长视频、播客蒸馏成 Agent Skill,再用装与不装的对照实测。</desc>
+<defs><marker id="cangjie-skill-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#cangjie-skill-arrow)"/>
+<path class="dg-edge" d="M368,80 H432" marker-end="url(#cangjie-skill-arrow)"/>
+<path class="dg-edge" d="M576,80 H600 Q608,80 608,72 V52 Q608,44 616,44 H640" marker-end="url(#cangjie-skill-arrow)"/>
+<path class="dg-edge" d="M712,68 V92" marker-end="url(#cangjie-skill-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="84" text-anchor="middle">书、长视频、播客</text>
+<rect class="dg-node" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="84" text-anchor="middle">蒸馏流水线</text>
+<rect class="dg-node" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="84" text-anchor="middle">Agent Skill</text>
+<rect class="dg-node dg-node--focal" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">实测门</text><text class="dg-sub dg-sub--mono" x="712" y="57" text-anchor="middle">measure.py</text>
+<rect class="dg-node" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="113" text-anchor="middle">LLM 评委</text><text class="dg-sub" x="712" y="129" text-anchor="middle">中和后双向判分</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p6">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">06</span>
+<h3>读财报 skill</h3>
+<p>把唐朝两本读财报的书蒸馏成 skill,通用与银行专项各一套硬门槛。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P3</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="读财报 skill 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="caibao-skill-title caibao-skill-desc">
+<title id="caibao-skill-title">读财报 skill 架构</title>
+<desc id="caibao-skill-desc">把唐朝两本读财报的书蒸馏成 skill,通用与银行专项各一套硬门槛。</desc>
+<defs><marker id="caibao-skill-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H173.33333333333334 Q181.33333333333334,44 181.33333333333334,52 V60 Q181.33333333333334,68 189.33333333333334,68 H224" marker-end="url(#caibao-skill-arrow)"/>
+<path class="dg-edge" d="M160,116 H194.66666666666666 Q202.66666666666666,116 202.66666666666666,108 V100 Q202.66666666666666,92 210.66666666666666,92 H224" marker-end="url(#caibao-skill-arrow)"/>
+<path class="dg-edge" d="M368,80 H432" marker-end="url(#caibao-skill-arrow)"/>
+<path class="dg-edge" d="M576,80 H640" marker-end="url(#caibao-skill-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="48" text-anchor="middle">通用读财报</text>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="120" text-anchor="middle">银行专项</text>
+<rect class="dg-node" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">cangjie 流水线</text><text class="dg-sub" x="296" y="93" text-anchor="middle">先骨架后提取</text>
+<rect class="dg-node dg-node--focal" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="77" text-anchor="middle">读财报 skill</text><text class="dg-sub" x="504" y="93" text-anchor="middle">硬门槛 5 + 3 条</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="77" text-anchor="middle">APS 插件市场</text><text class="dg-sub" x="712" y="93" text-anchor="middle">私有</text>
+</svg>
+</div></figure>
+</li>
+</ol>
+</div>
+</section>
+<section class="group group--flip" id="research" aria-labelledby="research-h">
+<div class="container">
+<header class="group__head">
+<h2 id="research-h">模型与系统研究</h2>
+<p class="lead">世界模型、扩散语言模型和 NPU 基准,多数跑在远端机器上。</p>
+</header>
+<ol class="items" start="7">
+<li class="item" id="p7">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">07</span>
+<h3>lewm-loopedwm</h3>
+<p>诊断 LeWM 与 Astra/Sol 基线的差距,验证循环精修方法。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="lewm-loopedwm 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="lewm-loopedwm-title lewm-loopedwm-desc">
+<title id="lewm-loopedwm-title">lewm-loopedwm 架构</title>
+<desc id="lewm-loopedwm-desc">诊断 LeWM 与 Astra/Sol 基线的差距,验证循环精修方法。</desc>
+<defs><marker id="lewm-loopedwm-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H184 Q192,80 192,72 V52 Q192,44 200,44 H224" marker-end="url(#lewm-loopedwm-arrow)"/>
+<path class="dg-edge" d="M296,68 V92" marker-end="url(#lewm-loopedwm-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#lewm-loopedwm-arrow)"/>
+<path class="dg-edge" d="M576,44 H589.3333333333334 Q597.3333333333334,44 597.3333333333334,52 V60 Q597.3333333333334,68 605.3333333333334,68 H640" marker-end="url(#lewm-loopedwm-arrow)"/>
+<path class="dg-edge" d="M576,116 H610.6666666666666 Q618.6666666666666,116 618.6666666666666,108 V100 Q618.6666666666666,92 626.6666666666666,92 H640" marker-end="url(#lewm-loopedwm-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">RoboDojo 仿真</text><text class="dg-sub" x="88" y="93" text-anchor="middle">push_T 25 个布局</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="41" text-anchor="middle">世界模型宿主</text><text class="dg-sub" x="296" y="57" text-anchor="middle">选型待定</text>
+<rect class="dg-node dg-node--focal" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="113" text-anchor="middle">循环精修</text><text class="dg-sub" x="296" y="129" text-anchor="middle">轮数 0/1/2/4/8</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="48" text-anchor="middle">Astra/Sol 基线</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="120" text-anchor="middle">LeWM 评测</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="77" text-anchor="middle">gap 诊断</text><text class="dg-sub" x="712" y="93" text-anchor="middle">预登记实验</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p8">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">08</span>
+<h3>dLLM 评测与负载分析框架</h3>
+<p>同一套服务上对照扩散语言模型与自回归模型的质量和负载。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="dLLM 评测与负载分析框架 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="dllm-eval-title dllm-eval-desc">
+<title id="dllm-eval-title">dLLM 评测与负载分析框架 架构</title>
+<desc id="dllm-eval-desc">同一套服务上对照扩散语言模型与自回归模型的质量和负载。</desc>
+<defs><marker id="dllm-eval-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#dllm-eval-arrow)"/>
+<path class="dg-edge" d="M368,68 H381.3333333333333 Q389.3333333333333,68 389.3333333333333,60 V52 Q389.3333333333333,44 397.3333333333333,44 H432" marker-end="url(#dllm-eval-arrow)"/>
+<path class="dg-edge" d="M368,92 H402.6666666666667 Q410.6666666666667,92 410.6666666666667,100 V108 Q410.6666666666667,116 418.6666666666667,116 H432" marker-end="url(#dllm-eval-arrow)"/>
+<path class="dg-edge" d="M576,44 H589.3333333333334 Q597.3333333333334,44 597.3333333333334,52 V60 Q597.3333333333334,68 605.3333333333334,68 H640" marker-end="url(#dllm-eval-arrow)"/>
+<path class="dg-edge" d="M576,116 H610.6666666666666 Q618.6666666666666,116 618.6666666666666,108 V100 Q618.6666666666666,92 626.6666666666666,92 H640" marker-end="url(#dllm-eval-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">配置矩阵</text><text class="dg-sub dg-sub--mono" x="88" y="93" text-anchor="middle">block_size</text>
+<rect class="dg-node dg-node--focal" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">SGLang 服务</text><text class="dg-sub" x="296" y="93" text-anchor="middle">SDAR 对 Qwen3</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">lm-eval</text><text class="dg-sub" x="504" y="57" text-anchor="middle">质量评测</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="113" text-anchor="middle">AIPerf</text><text class="dg-sub" x="504" y="129" text-anchor="middle">负载测量</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="84" text-anchor="middle">对照报告</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p9">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">09</span>
+<h3>CANNBench converter</h3>
+<p>修复 converter 的值域问题,加 HAP 校准与四道门禁。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="CANNBench converter 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="cannbench-title cannbench-desc">
+<title id="cannbench-title">CANNBench converter 架构</title>
+<desc id="cannbench-desc">修复 converter 的值域问题,加 HAP 校准与四道门禁。</desc>
+<defs><marker id="cannbench-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#cannbench-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#cannbench-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#cannbench-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="48" text-anchor="middle">基准用例</text>
+<rect class="dg-node dg-node--focal" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="41" text-anchor="middle">converter</text><text class="dg-sub" x="296" y="57" text-anchor="middle">值域修复</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="48" text-anchor="middle">HAP 校准脚本</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">四道门禁</text><text class="dg-sub" x="712" y="57" text-anchor="middle">NPU 门禁待实机</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p10">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">10</span>
+<h3>dLLM 负载分析幻灯片</h3>
+<p>按 model.py 模块逐页讲负载,47 页,以 roofline 前沿图收尾。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="dLLM 负载分析幻灯片 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="dllm-deck-title dllm-deck-desc">
+<title id="dllm-deck-title">dLLM 负载分析幻灯片 架构</title>
+<desc id="dllm-deck-desc">按 model.py 模块逐页讲负载,47 页,以 roofline 前沿图收尾。</desc>
+<defs><marker id="dllm-deck-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M192,44 H224 Q232,44 232,52 V96 Q232,104 240,104 H312" marker-end="url(#dllm-deck-arrow)"/>
+<path class="dg-edge" d="M192,116 H312" marker-end="url(#dllm-deck-arrow)"/>
+<path class="dg-edge" d="M192,188 H264 Q272,188 272,180 V136 Q272,128 280,128 H312" marker-end="url(#dllm-deck-arrow)"/>
+<path class="dg-edge" d="M488,116 H608" marker-end="url(#dllm-deck-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="41" text-anchor="middle">论文</text><text class="dg-sub" x="104" y="57" text-anchor="middle">ALoDLM, TADM, ORL</text>
+<rect class="dg-node" x="16" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="120" text-anchor="middle">model.py 模块</text>
+<rect class="dg-node" x="16" y="164" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="185" text-anchor="middle">本地编辑服务</text><text class="dg-sub" x="104" y="201" text-anchor="middle">写回 src/</text>
+<rect class="dg-node dg-node--focal" x="312" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="400" y="120" text-anchor="middle">src/ 幻灯片源</text>
+<rect class="dg-node" x="608" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="696" y="113" text-anchor="middle">47 页幻灯片</text><text class="dg-sub" x="696" y="129" text-anchor="middle">roofline 前沿图收尾</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p11">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">11</span>
+<h3>DGX Spark 接入</h3>
+<p>新机器免密接入,并把内核与驱动对齐到本机版本。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>探索</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="DGX Spark 接入 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="dgx-spark-title dgx-spark-desc">
+<title id="dgx-spark-title">DGX Spark 接入 架构</title>
+<desc id="dgx-spark-desc">新机器免密接入,并把内核与驱动对齐到本机版本。</desc>
+<defs><marker id="dgx-spark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M192,44 H312" marker-end="url(#dgx-spark-arrow)"/>
+<path class="dg-edge" d="M192,116 H312" marker-end="url(#dgx-spark-arrow)"/>
+<path class="dg-edge" d="M488,44 H520 Q528,44 528,52 V60 Q528,68 536,68 H608" marker-end="url(#dgx-spark-arrow)"/>
+<path class="dg-edge" d="M488,116 H560 Q568,116 568,108 V100 Q568,92 576,92 H608" marker-end="url(#dgx-spark-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="48" text-anchor="middle">本机</text>
+<rect class="dg-node" x="16" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="113" text-anchor="middle">离线包</text><text class="dg-sub dg-sub--mono" x="104" y="129" text-anchor="middle">match-local.sh</text>
+<rect class="dg-node" x="312" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="400" y="48" text-anchor="middle">SSH 免密</text>
+<rect class="dg-node" x="312" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="400" y="120" text-anchor="middle">内核与驱动对齐</text>
+<rect class="dg-node dg-node--focal" x="608" y="56" width="176" height="48" rx="6"/><text class="dg-name" x="696" y="84" text-anchor="middle">DGX Spark</text>
+</svg>
+</div></figure>
+</li>
+</ol>
+</div>
+</section>
+<section class="group" id="product" aria-labelledby="product-h">
+<div class="container">
+<header class="group__head">
+<h2 id="product-h">产品</h2>
+<p class="lead">从中文启蒙到家庭数据,做给身边人用的东西。</p>
+</header>
+<ol class="items" start="12">
+<li class="item" id="p12">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">12</span>
+<h3>openlingo</h3>
+<p>以识字为主线的 AI 中文启蒙,故事只用孩子学过的字。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="openlingo 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="openlingo-title openlingo-desc">
+<title id="openlingo-title">openlingo 架构</title>
+<desc id="openlingo-desc">以识字为主线的 AI 中文启蒙,故事只用孩子学过的字。</desc>
+<defs><marker id="openlingo-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#openlingo-arrow)"/>
+<path class="dg-edge" d="M368,80 H432" marker-end="url(#openlingo-arrow)"/>
+<path class="dg-edge" d="M576,80 H600 Q608,80 608,72 V52 Q608,44 616,44 H640" marker-end="url(#openlingo-arrow)"/>
+<path class="dg-edge" d="M712,92 V68" marker-end="url(#openlingo-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">学习者模型</text><text class="dg-sub" x="88" y="93" text-anchor="middle">已识字与间隔复习</text>
+<rect class="dg-node" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">故事生成</text><text class="dg-sub" x="296" y="93" text-anchor="middle">按字集约束</text>
+<rect class="dg-node dg-node--focal" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="77" text-anchor="middle">逐字校验</text><text class="dg-sub" x="504" y="93" text-anchor="middle">代码校验用字</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="48" text-anchor="middle">30 分钟课堂</text>
+<rect class="dg-node" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="113" text-anchor="middle">语音层</text><text class="dg-sub" x="712" y="129" text-anchor="middle">导演加演员</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p13">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">13</span>
+<h3>family-os</h3>
+<p>家庭数据的录入、解析与备份,投资账户走只读连接器。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="family-os 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="family-os-title family-os-desc">
+<title id="family-os-title">family-os 架构</title>
+<desc id="family-os-desc">家庭数据的录入、解析与备份,投资账户走只读连接器。</desc>
+<defs><marker id="family-os-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H173.33333333333334 Q181.33333333333334,44 181.33333333333334,52 V96 Q181.33333333333334,104 189.33333333333334,104 H224" marker-end="url(#family-os-arrow)"/>
+<path class="dg-edge" d="M160,116 H224" marker-end="url(#family-os-arrow)"/>
+<path class="dg-edge" d="M160,188 H194.66666666666666 Q202.66666666666666,188 202.66666666666666,180 V136 Q202.66666666666666,128 210.66666666666666,128 H224" marker-end="url(#family-os-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#family-os-arrow)"/>
+<path class="dg-edge" d="M576,104 H589.3333333333334 Q597.3333333333334,104 597.3333333333334,96 V88 Q597.3333333333334,80 605.3333333333334,80 H640" marker-end="url(#family-os-arrow)"/>
+<path class="dg-edge" d="M576,128 H610.6666666666666 Q618.6666666666666,128 618.6666666666666,136 V144 Q618.6666666666666,152 626.6666666666666,152 H640" marker-end="url(#family-os-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">IBKR 连接器</text><text class="dg-sub" x="88" y="57" text-anchor="middle">只读</text>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="120" text-anchor="middle">Questrade API</text>
+<rect class="dg-node" x="16" y="164" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="192" text-anchor="middle">CSV 手动导入</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="120" text-anchor="middle">上传与解析</text>
+<rect class="dg-node dg-node--focal" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="120" text-anchor="middle">对象库</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="84" text-anchor="middle">对象与类型页</text>
+<rect class="dg-node" x="640" y="128" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="156" text-anchor="middle">iCloud 第二备份</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p14">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">14</span>
+<h3>flavor-spark</h3>
+<p>多伦多餐厅数据打底的美食推荐服务。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>探索</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="flavor-spark 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="flavor-spark-title flavor-spark-desc">
+<title id="flavor-spark-title">flavor-spark 架构</title>
+<desc id="flavor-spark-desc">多伦多餐厅数据打底的美食推荐服务。</desc>
+<defs><marker id="flavor-spark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H173.33333333333334 Q181.33333333333334,44 181.33333333333334,52 V96 Q181.33333333333334,104 189.33333333333334,104 H224" marker-end="url(#flavor-spark-arrow)"/>
+<path class="dg-edge" d="M160,116 H224" marker-end="url(#flavor-spark-arrow)"/>
+<path class="dg-edge" d="M160,188 H194.66666666666666 Q202.66666666666666,188 202.66666666666666,180 V136 Q202.66666666666666,128 210.66666666666666,128 H224" marker-end="url(#flavor-spark-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#flavor-spark-arrow)"/>
+<path class="dg-edge" d="M576,116 H640" marker-end="url(#flavor-spark-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">餐厅基础库</text><text class="dg-sub" x="88" y="57" text-anchor="middle">多伦多 9,002 条</text>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="120" text-anchor="middle">菜单采集</text>
+<rect class="dg-node" x="16" y="164" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="192" text-anchor="middle">Google 评论采集</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="113" text-anchor="middle">导入脚本</text><text class="dg-sub" x="296" y="129" text-anchor="middle">已写未执行</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="120" text-anchor="middle">PostgreSQL</text>
+<rect class="dg-node dg-node--focal" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="113" text-anchor="middle">推荐服务</text><text class="dg-sub" x="712" y="129" text-anchor="middle">TypeScript 单体</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p15">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">15</span>
+<h3>脚手架变现调研</h3>
+<p>调研卖 boilerplate 的定价、收入和 2026 年的热门方向。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>探索</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="脚手架变现调研 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="boilerplate-title boilerplate-desc">
+<title id="boilerplate-title">脚手架变现调研 架构</title>
+<desc id="boilerplate-desc">调研卖 boilerplate 的定价、收入和 2026 年的热门方向。</desc>
+<defs><marker id="boilerplate-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M192,44 H224 Q232,44 232,52 V60 Q232,68 240,68 H312" marker-end="url(#boilerplate-arrow)"/>
+<path class="dg-edge" d="M192,116 H264 Q272,116 272,108 V100 Q272,92 280,92 H312" marker-end="url(#boilerplate-arrow)"/>
+<path class="dg-edge dg-edge--dashed" d="M488,80 H608" marker-end="url(#boilerplate-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="48" text-anchor="middle">主流产品定价与收入</text>
+<rect class="dg-node" x="16" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="113" text-anchor="middle">2026 热门方向</text><text class="dg-sub" x="104" y="129" text-anchor="middle">TanStack Start, Tauri 等</text>
+<rect class="dg-node dg-node--focal" x="312" y="56" width="176" height="48" rx="6"/><text class="dg-name" x="400" y="84" text-anchor="middle">调研结论</text>
+<rect class="dg-node dg-node--pending" x="608" y="56" width="176" height="48" rx="6"/><text class="dg-name" x="696" y="77" text-anchor="middle">技术栈与目标人群</text><text class="dg-sub" x="696" y="93" text-anchor="middle">待定</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p16">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">16</span>
+<h3>音频转字幕</h3>
+<p>用 whisper.cpp 把长音频转成带时间戳的字幕和文本稿。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P3</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="音频转字幕 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="whisper-srt-title whisper-srt-desc">
+<title id="whisper-srt-title">音频转字幕 架构</title>
+<desc id="whisper-srt-desc">用 whisper.cpp 把长音频转成带时间戳的字幕和文本稿。</desc>
+<defs><marker id="whisper-srt-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#whisper-srt-arrow)"/>
+<path class="dg-edge" d="M368,68 H381.3333333333333 Q389.3333333333333,68 389.3333333333333,60 V52 Q389.3333333333333,44 397.3333333333333,44 H432" marker-end="url(#whisper-srt-arrow)"/>
+<path class="dg-edge" d="M368,92 H402.6666666666667 Q410.6666666666667,92 410.6666666666667,100 V108 Q410.6666666666667,116 418.6666666666667,116 H432" marker-end="url(#whisper-srt-arrow)"/>
+<path class="dg-edge" d="M576,44 H600 Q608,44 608,52 V72 Q608,80 616,80 H640" marker-end="url(#whisper-srt-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="84" text-anchor="middle">70 分钟音频</text>
+<rect class="dg-node dg-node--focal" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">whisper.cpp</text><text class="dg-sub dg-sub--mono" x="296" y="93" text-anchor="middle">large-v3-turbo</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">SRT 字幕</text><text class="dg-sub" x="504" y="57" text-anchor="middle">带时间戳</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="120" text-anchor="middle">纯文本稿</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="84" text-anchor="middle">引用核对</text>
+</svg>
+</div></figure>
+</li>
+</ol>
+</div>
+</section>
+<section class="group group--flip" id="invest" aria-labelledby="invest-h">
+<div class="container">
+<header class="group__head">
+<h2 id="invest-h">投资研究</h2>
+<p class="lead">量化研究与逐家公司的财报分析,不展示金额与账户。</p>
+</header>
+<ol class="items" start="17">
+<li class="item" id="p17">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">17</span>
+<h3>rsi-quant</h3>
+<p>ETF 轮动与杠杆择时,每日研究,过 lockbox 才进模拟盘。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="rsi-quant 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="rsi-quant-title rsi-quant-desc">
+<title id="rsi-quant-title">rsi-quant 架构</title>
+<desc id="rsi-quant-desc">ETF 轮动与杠杆择时,每日研究,过 lockbox 才进模拟盘。</desc>
+<defs><marker id="rsi-quant-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#rsi-quant-arrow)"/>
+<path class="dg-edge" d="M368,80 H432" marker-end="url(#rsi-quant-arrow)"/>
+<path class="dg-edge" d="M576,68 H589.3333333333334 Q597.3333333333334,68 597.3333333333334,60 V52 Q597.3333333333334,44 605.3333333333334,44 H640" marker-end="url(#rsi-quant-arrow)"/>
+<path class="dg-edge" d="M576,92 H610.6666666666666 Q618.6666666666666,92 618.6666666666666,100 V108 Q618.6666666666666,116 626.6666666666666,116 H640" marker-end="url(#rsi-quant-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">每日研究任务</text><text class="dg-sub dg-sub--mono" x="88" y="93" text-anchor="middle">03:00</text>
+<rect class="dg-node" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="84" text-anchor="middle">候选策略</text>
+<rect class="dg-node dg-node--focal" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="77" text-anchor="middle">lockbox 检验</text><text class="dg-sub" x="504" y="93" text-anchor="middle">deflated Sharpe</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">模拟盘正式盘</text><text class="dg-sub" x="712" y="57" text-anchor="middle">每日运行</text>
+<rect class="dg-node" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="120" text-anchor="middle">观察盘</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p18">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">18</span>
+<h3>trading-agents</h3>
+<p>多角色投研 agent,快速层与决策层用不同模型。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="trading-agents 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="trading-agents-title trading-agents-desc">
+<title id="trading-agents-title">trading-agents 架构</title>
+<desc id="trading-agents-desc">多角色投研 agent,快速层与决策层用不同模型。</desc>
+<defs><marker id="trading-agents-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H224" marker-end="url(#trading-agents-arrow)"/>
+<path class="dg-edge" d="M368,80 H392 Q400,80 400,72 V52 Q400,44 408,44 H432" marker-end="url(#trading-agents-arrow)"/>
+<path class="dg-edge" d="M504,68 V92" marker-end="url(#trading-agents-arrow)"/>
+<path class="dg-edge" d="M576,116 H600 Q608,116 608,108 V88 Q608,80 616,80 H640" marker-end="url(#trading-agents-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="84" text-anchor="middle">run.sh</text>
+<rect class="dg-node" x="224" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="77" text-anchor="middle">快速层</text><text class="dg-sub" x="296" y="93" text-anchor="middle">Codex</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">研究经理</text><text class="dg-sub dg-sub--mono" x="504" y="57" text-anchor="middle">claude-opus-5-5</text>
+<rect class="dg-node" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="113" text-anchor="middle">投资组合经理</text><text class="dg-sub dg-sub--mono" x="504" y="129" text-anchor="middle">claude-opus-5-5</text>
+<rect class="dg-node dg-node--focal" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="77" text-anchor="middle">研究报告</text><text class="dg-sub" x="712" y="93" text-anchor="middle">含目标价</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p19">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">19</span>
+<h3>NVO 能力圈扩展</h3>
+<p>先把公司与行业文件补齐,再跑 /analyze。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="NVO 能力圈扩展 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="nvo-title nvo-desc">
+<title id="nvo-title">NVO 能力圈扩展 架构</title>
+<desc id="nvo-desc">先把公司与行业文件补齐,再跑 /analyze。</desc>
+<defs><marker id="nvo-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H184 Q192,80 192,72 V52 Q192,44 200,44 H224" marker-end="url(#nvo-arrow)"/>
+<path class="dg-edge" d="M368,44 H381.3333333333333 Q389.3333333333333,44 389.3333333333333,52 V60 Q389.3333333333333,68 397.3333333333333,68 H432" marker-end="url(#nvo-arrow)"/>
+<path class="dg-edge" d="M368,116 H402.6666666666667 Q410.6666666666667,116 410.6666666666667,108 V100 Q410.6666666666667,92 418.6666666666667,92 H432" marker-end="url(#nvo-arrow)"/>
+<path class="dg-edge" d="M576,80 H640" marker-end="url(#nvo-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">fetch_edgar.py</text><text class="dg-sub" x="88" y="93" text-anchor="middle">待支持 IFRS</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">公司文件</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="113" text-anchor="middle">行业文件</text><text class="dg-sub dg-sub--mono" x="296" y="129" text-anchor="middle">pharmaceuticals</text>
+<rect class="dg-node dg-node--focal" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="84" text-anchor="middle">能力圈检查</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="77" text-anchor="middle">/analyze</text><text class="dg-sub" x="712" y="93" text-anchor="middle">Phase 1 到 5</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p20">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">20</span>
+<h3>ATZ 财报阅读</h3>
+<p>4 个 agent 并行读四份财报,汇总后做三档 DCF。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="ATZ 财报阅读 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="atz-title atz-desc">
+<title id="atz-title">ATZ 财报阅读 架构</title>
+<desc id="atz-desc">4 个 agent 并行读四份财报,汇总后做三档 DCF。</desc>
+<defs><marker id="atz-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#atz-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#atz-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#atz-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">年报与中报</text><text class="dg-sub" x="88" y="57" text-anchor="middle">4 份</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="41" text-anchor="middle">并行阅读 agent</text><text class="dg-sub" x="296" y="57" text-anchor="middle">4 个</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">汇总与 DCF</text><text class="dg-sub" x="504" y="57" text-anchor="middle">低中高三档</text>
+<rect class="dg-node dg-node--focal" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">Phase 5 门禁</text><text class="dg-sub" x="712" y="57" text-anchor="middle">冷却与反证</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p21">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">21</span>
+<h3>RBLX 与 PENG 财报复核</h3>
+<p>财报后刷新公司文件与三点估值。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="RBLX 与 PENG 财报复核 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="rblx-peng-title rblx-peng-desc">
+<title id="rblx-peng-title">RBLX 与 PENG 财报复核 架构</title>
+<desc id="rblx-peng-desc">财报后刷新公司文件与三点估值。</desc>
+<defs><marker id="rblx-peng-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#rblx-peng-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#rblx-peng-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#rblx-peng-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="48" text-anchor="middle">季度财报</text>
+<rect class="dg-node dg-node--focal" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">公司文件刷新</text>
+<rect class="dg-node" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="41" text-anchor="middle">三点估值</text><text class="dg-sub" x="504" y="57" text-anchor="middle">未签</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="41" text-anchor="middle">Phase 5 门禁</text><text class="dg-sub" x="712" y="57" text-anchor="middle">反证为空被拒</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p22">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">22</span>
+<h3>A 股账户持仓分析与调仓</h3>
+<p>读持仓、查财报证据,出宽基为主的调仓方案。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="A 股账户持仓分析与调仓 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="a-share-title a-share-desc">
+<title id="a-share-title">A 股账户持仓分析与调仓 架构</title>
+<desc id="a-share-desc">读持仓、查财报证据,出宽基为主的调仓方案。</desc>
+<defs><marker id="a-share-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,68 H173.33333333333334 Q181.33333333333334,68 181.33333333333334,60 V52 Q181.33333333333334,44 189.33333333333334,44 H224" marker-end="url(#a-share-arrow)"/>
+<path class="dg-edge" d="M160,92 H194.66666666666666 Q202.66666666666666,92 202.66666666666666,100 V108 Q202.66666666666666,116 210.66666666666666,116 H224" marker-end="url(#a-share-arrow)"/>
+<path class="dg-edge" d="M368,44 H381.3333333333333 Q389.3333333333333,44 389.3333333333333,52 V60 Q389.3333333333333,68 397.3333333333333,68 H432" marker-end="url(#a-share-arrow)"/>
+<path class="dg-edge" d="M368,116 H402.6666666666667 Q410.6666666666667,116 410.6666666666667,108 V100 Q410.6666666666667,92 418.6666666666667,92 H432" marker-end="url(#a-share-arrow)"/>
+<path class="dg-edge" d="M576,80 H640" marker-end="url(#a-share-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="84" text-anchor="middle">持仓读取</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">结构分析</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="120" text-anchor="middle">财报证据</text>
+<rect class="dg-node" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="77" text-anchor="middle">调仓方案</text><text class="dg-sub" x="504" y="93" text-anchor="middle">宽基为主,未执行</text>
+<rect class="dg-node dg-node--focal" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="84" text-anchor="middle">封仓十年测试</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p23">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">23</span>
+<h3>CBRS 持仓减仓计划</h3>
+<p>按研报结论分批减仓,财报前后分步处理。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>探索</dd></div>
+<div><dt>优先级</dt><dd>P0</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="CBRS 持仓减仓计划 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="cbrs-title cbrs-desc">
+<title id="cbrs-title">CBRS 持仓减仓计划 架构</title>
+<desc id="cbrs-desc">按研报结论分批减仓,财报前后分步处理。</desc>
+<defs><marker id="cbrs-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M192,44 H224 Q232,44 232,52 V60 Q232,68 240,68 H312" marker-end="url(#cbrs-arrow)"/>
+<path class="dg-edge" d="M192,116 H264 Q272,116 272,108 V100 Q272,92 280,92 H312" marker-end="url(#cbrs-arrow)"/>
+<path class="dg-edge" d="M488,68 H520 Q528,68 528,60 V52 Q528,44 536,44 H608" marker-end="url(#cbrs-arrow)"/>
+<path class="dg-edge" d="M488,92 H560 Q568,92 568,100 V108 Q568,116 576,116 H608" marker-end="url(#cbrs-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="48" text-anchor="middle">研报结论</text>
+<rect class="dg-node" x="16" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="104" y="120" text-anchor="middle">持仓现状</text>
+<rect class="dg-node dg-node--focal" x="312" y="56" width="176" height="48" rx="6"/><text class="dg-name" x="400" y="77" text-anchor="middle">分批减仓计划</text><text class="dg-sub" x="400" y="93" text-anchor="middle">不补仓</text>
+<rect class="dg-node" x="608" y="20" width="176" height="48" rx="6"/><text class="dg-name" x="696" y="48" text-anchor="middle">财报前</text>
+<rect class="dg-node" x="608" y="92" width="176" height="48" rx="6"/><text class="dg-name" x="696" y="120" text-anchor="middle">财报后</text>
+</svg>
+</div></figure>
+</li>
+</ol>
+</div>
+</section>
+<section class="group" id="career" aria-labelledby="career-h">
+<div class="container">
+<header class="group__head">
+<h2 id="career-h">求职</h2>
+<p class="lead">把找工作当流水线做:评估、定制、投递、跟进。</p>
+</header>
+<ol class="items" start="24">
+<li class="item" id="p24">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">24</span>
+<h3>加拿大 H 级岗位评估与定制简历</h3>
+<p>逐个岗位打分,过线的才出一页定制简历。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="加拿大 H 级岗位评估与定制简历 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 160" width="800" height="160" role="img" aria-labelledby="h-level-title h-level-desc">
+<title id="h-level-title">加拿大 H 级岗位评估与定制简历 架构</title>
+<desc id="h-level-desc">逐个岗位打分,过线的才出一页定制简历。</desc>
+<defs><marker id="h-level-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,80 H184 Q192,80 192,72 V52 Q192,44 200,44 H224" marker-end="url(#h-level-arrow)"/>
+<path class="dg-edge" d="M368,44 H381.3333333333333 Q389.3333333333333,44 389.3333333333333,52 V60 Q389.3333333333333,68 397.3333333333333,68 H432" marker-end="url(#h-level-arrow)"/>
+<path class="dg-edge" d="M368,116 H402.6666666666667 Q410.6666666666667,116 410.6666666666667,108 V100 Q410.6666666666667,92 418.6666666666667,92 H432" marker-end="url(#h-level-arrow)"/>
+<path class="dg-edge" d="M576,80 H640" marker-end="url(#h-level-arrow)"/>
+<rect class="dg-node" x="16" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="77" text-anchor="middle">岗位 JD</text><text class="dg-sub" x="88" y="93" text-anchor="middle">7 个</text>
+<rect class="dg-node dg-node--focal" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="41" text-anchor="middle">评估打分</text><text class="dg-sub" x="296" y="57" text-anchor="middle">4.0 分以上才投</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="120" text-anchor="middle">cv.md</text>
+<rect class="dg-node" x="432" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="84" text-anchor="middle">一页定制简历</text>
+<rect class="dg-node" x="640" y="56" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="84" text-anchor="middle">投递</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p25">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">25</span>
+<h3>目标岗位申请</h3>
+<p>两个岗位的评估、定制简历、投递与跟进。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>验证</dd></div>
+<div><dt>优先级</dt><dd>P1</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="目标岗位申请 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 88" width="800" height="88" role="img" aria-labelledby="applications-title applications-desc">
+<title id="applications-title">目标岗位申请 架构</title>
+<desc id="applications-desc">两个岗位的评估、定制简历、投递与跟进。</desc>
+<defs><marker id="applications-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H224" marker-end="url(#applications-arrow)"/>
+<path class="dg-edge" d="M368,44 H432" marker-end="url(#applications-arrow)"/>
+<path class="dg-edge" d="M576,44 H640" marker-end="url(#applications-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="41" text-anchor="middle">岗位评估</text><text class="dg-sub" x="88" y="57" text-anchor="middle">2 个岗位</text>
+<rect class="dg-node" x="224" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="48" text-anchor="middle">定制简历</text>
+<rect class="dg-node dg-node--focal" x="432" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="48" text-anchor="middle">投递</text>
+<rect class="dg-node" x="640" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="48" text-anchor="middle">招聘人联系与跟进</text>
+</svg>
+</div></figure>
+</li>
+<li class="item" id="p26">
+<div class="item__text">
+<span class="item__rank" aria-hidden="true">26</span>
+<h3>AI agent 公司岗位调研表</h3>
+<p>多伦多、加拿大、美国招 AI agent 落地岗位的公司,合并成一张表。</p>
+<dl class="meta">
+<div><dt>阶段</dt><dd>构建</dd></div>
+<div><dt>优先级</dt><dd>P2</dd></div>
+<div><dt>仓库</dt><dd>未公开</dd></div>
+</dl>
+</div>
+<figure class="item__fig cut"><div class="dg-wrap" tabindex="0" role="group" aria-label="AI agent 公司岗位调研表 架构图,可横向滚动">
+<svg class="dg" viewBox="0 0 800 232" width="800" height="232" role="img" aria-labelledby="job-survey-title job-survey-desc">
+<title id="job-survey-title">AI agent 公司岗位调研表 架构</title>
+<desc id="job-survey-desc">多伦多、加拿大、美国招 AI agent 落地岗位的公司,合并成一张表。</desc>
+<defs><marker id="job-survey-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
+<path class="dg-edge" d="M160,44 H173.33333333333334 Q181.33333333333334,44 181.33333333333334,52 V96 Q181.33333333333334,104 189.33333333333334,104 H224" marker-end="url(#job-survey-arrow)"/>
+<path class="dg-edge" d="M160,116 H224" marker-end="url(#job-survey-arrow)"/>
+<path class="dg-edge" d="M160,188 H194.66666666666666 Q202.66666666666666,188 202.66666666666666,180 V136 Q202.66666666666666,128 210.66666666666666,128 H224" marker-end="url(#job-survey-arrow)"/>
+<path class="dg-edge" d="M368,116 H432" marker-end="url(#job-survey-arrow)"/>
+<path class="dg-edge dg-edge--dashed" d="M576,116 H640" marker-end="url(#job-survey-arrow)"/>
+<rect class="dg-node" x="16" y="20" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="48" text-anchor="middle">多伦多</text>
+<rect class="dg-node" x="16" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="120" text-anchor="middle">加拿大</text>
+<rect class="dg-node" x="16" y="164" width="144" height="48" rx="6"/><text class="dg-name" x="88" y="192" text-anchor="middle">美国</text>
+<rect class="dg-node" x="224" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="296" y="120" text-anchor="middle">合并</text>
+<rect class="dg-node dg-node--focal" x="432" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="504" y="113" text-anchor="middle">岗位调研表</text><text class="dg-sub" x="504" y="129" text-anchor="middle">267 行,171 家公司</text>
+<rect class="dg-node dg-node--pending" x="640" y="92" width="144" height="48" rx="6"/><text class="dg-name" x="712" y="113" text-anchor="middle">工资信息抓取</text><text class="dg-sub" x="712" y="129" text-anchor="middle">未完成</text>
+</svg>
+</div></figure>
+</li>
+</ol>
+</div>
+</section>
+<section class="others" id="others" aria-labelledby="others-h">
+<div class="container others__in">
+<header class="others__head">
+<h2 id="others-h">看板之外的公开仓</h2>
+<p class="lead">不在看板上、但已经公开的 8 个仓库。</p>
+</header>
+<ul class="index">
+<li><h3>Herdeo</h3><p>Herdr 加 Paseo:电脑上保留原生终端,手机上随时接手。</p><p class="index__links"><a href="https://github.com/yiju-zhao/Herdeo" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>herdr-lens</h3><p>在 Herdr 里只读预览 agent 提到的文件。</p><p class="index__links"><a href="https://github.com/yiju-zhao/herdr-lens" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>billing-usage</h3><p>在终端里看多台设备的 Claude Code token 用量与标价成本。</p><p class="index__links"><a href="https://github.com/yiju-zhao/billing-usage" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>claude-token-meter</h3><p>用 OTel、Loki、Grafana 按 token 统计 Claude Code 订阅用量。</p><p class="index__links"><a href="https://github.com/yiju-zhao/claude-token-meter" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>deckpowers</h3><p>给 Claude Code 的系统化写幻灯片方法。</p><p class="index__links"><a href="https://github.com/yiju-zhao/deckpowers" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>ConferenceFlow</h3><p>GTC 2026 日程。</p><p class="index__links"><a href="https://github.com/yiju-zhao/ConferenceFlow" rel="noopener">GitHub 仓库</a><a href="https://conference-flow.vercel.app" rel="noopener">线上地址</a></p></li>
+<li><h3>DeepSight-Django</h3><p>研究与文档的全栈应用,Django 加 React。</p><p class="index__links"><a href="https://github.com/yiju-zhao/DeepSight-Django" rel="noopener">GitHub 仓库</a></p></li>
+<li><h3>EchoPersona</h3><p>从幻灯片生成讲稿与语音旁白。</p><p class="index__links"><a href="https://github.com/yiju-zhao/EchoPersona" rel="noopener">GitHub 仓库</a></p></li>
+</ul>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="container footer__in">
+<p class="wordmark">Yiju Zhao</p>
+<nav class="footer__links" aria-label="页脚">
+<a href="https://github.com/yiju-zhao" rel="noopener">GitHub 主页</a>
+<a href="#agent">Agent 工具链</a>
+<a href="#research">模型与系统研究</a>
+<a href="#product">产品</a>
+<a href="#invest">投资研究</a>
+<a href="#career">求职</a>
+</nav>
+<p class="footer__note">本页由 build.mjs 按看板盘点生成,更新于 <time datetime="2026-11-11">2026-11-11</time>。</p>
+</div>
+</footer>
+</body>
+</html>

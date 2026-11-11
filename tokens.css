@@ -1,0 +1,40 @@
+/* Cobalt theme tokens (Hallmark) and the shared scale. Every colour and font on the page goes through these. */
+:root {
+  --color-paper: oklch(98.6% 0.005 250); --color-paper-2: oklch(96.2% 0.008 252); --color-paper-3: oklch(93% 0.011 252);
+  --color-ink: oklch(21% 0.028 262); --color-ink-2: oklch(36% 0.022 260); --color-muted: oklch(50% 0.018 258);
+  --color-rule: oklch(90% 0.009 252); --color-rule-2: oklch(83% 0.012 252);
+  --color-accent: oklch(52% 0.19 258); --color-accent-wash: oklch(95% 0.028 256); --color-accent-ink: oklch(98.6% 0.005 250);
+  --color-accent-edge: oklch(39% 0.16 260); --color-focus: oklch(52% 0.19 258);
+  --color-glyph-1: oklch(89% 0.025 254);
+  --color-key-face: oklch(99.4% 0.003 250); --color-key-edge: oklch(80% 0.016 254);
+
+  --font-cjk: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei";
+  --font-display: "Familjen Grotesk", var(--font-cjk), system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", var(--font-cjk), system-ui, sans-serif;
+  --font-outlier: "JetBrains Mono", ui-monospace, monospace;
+
+  --text-display: clamp(2.5rem, 5vw, 4.5rem);
+  --text-section: clamp(2rem, 3.6vw, 3.25rem);
+  --text-title: 1.5625rem;
+  --text-lead: 1.3125rem;
+  --text-md: 1rem;
+  --text-sm: 0.875rem;
+  --tracking-display: -0.028em;
+
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
+  --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --section-gap-s: clamp(64px, 8.4vw, 120px); --section-gap: clamp(72px, 10vw, 144px);
+
+  --container: 1440px; --gutter: clamp(16px, 4.4vw, 64px); --gap-columns: 32px;
+  --radius-card: 8px; --radius-input: 6px; --cut: 8px; --cut-l: 16px; --cell-w: 8px; --cell-h: 16px;
+  --rule-hair: 1px;
+  --shadow-card: 0 1px 2px oklch(21% 0.028 262 / 0.06);
+  --shadow-key: 0 3px 0 0 var(--color-key-edge), 0 6px 8px -4px oklch(21% 0.028 262 / 0.28), inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  --shadow-key-accent: 0 3px 0 0 var(--color-accent-edge), 0 6px 8px -4px oklch(30% 0.12 260 / 0.45), inset 0 1px 0 oklch(100% 0 0 / 0.22);
+  --shadow-key-press: inset 0 1px 2px oklch(21% 0.028 262 / 0.14);
+
+  --dur-micro: 120ms; --dur-short: 220ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --z-nav: 300; --z-toast: 500;
+  --nav-h: 64px;
+}
