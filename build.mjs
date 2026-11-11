@@ -402,20 +402,6 @@ const others = [
   { name: 'EchoPersona', line: '从幻灯片生成讲稿与语音旁白。', repo: `${GH}/EchoPersona` },
 ];
 
-// The hero's own diagram: where this page's content comes from.
-const heroDiagram = {
-  slug: 'hero',
-  title: '这个主页的来源',
-  line: '多台机器上的 agent session 汇总到 agent-pm 看板,看板上的项目经 build.mjs 生成本页。',
-  cols: [
-    [{ id: 's', n: 'Agent session', s: '多台机器' }],
-    [{ id: 'b', n: 'agent-pm 看板', s: '26 个项目' }],
-    [{ id: 'g', n: 'build.mjs', s: '手动同步' }],
-    [{ id: 'p', n: '本页', s: '26 张架构图', f: 1 }],
-  ],
-  edges: ['s>b', 'b>g', 'g>p'],
-};
-
 // ---------------------------------------------------------------- diagram renderer
 
 const W = 800, PAD_X = 16, PAD_Y = 20, NH = 48, PITCH = 72;
@@ -569,54 +555,129 @@ ${boxes.join('\n')}
 
 // ---------------------------------------------------------------- page
 
-const total = groups.reduce((s, g) => s + g.projects.length, 0);
-let rank = 0;
+// The page is about a builder, not a board. Four builds are told in full
+// (why, the call I made, where it stands); the rest are short rows whose
+// diagram opens on demand.
+const featured = ['agent-pm', 'openlingo', 'cangjie-skill', 'rsi-quant'];
 
-const item = (p) => {
-  rank += 1;
-  const repo = p.repo
-    ? `<a href="${p.repo}" rel="noopener">GitHub 仓库</a>`
-    : '未公开';
-  const live = p.live ? `<div><dt>演示</dt><dd><a href="${p.live}" rel="noopener">打开演示</a></dd></div>` : '';
-  return `<li class="item" id="p${rank}">
+// Personal operations, kept off the public page.
+const hidden = ['cbrs', 'a-share', 'h-level', 'applications', 'job-survey'];
+
+const copy = {
+  'agent-pm': {
+    why: '同时开着十几个 agent,分在四台机器上,我记不住谁在做哪件事。',
+    call: '中心不 ssh 任何机器。采集器只推不拉,游标等中心确认才前进,断网重启不丢不重。',
+    now: '在四台机器上跑着,这个页面的项目清单就来自它。',
+  },
+  openlingo: {
+    why: '想替掉现在上的中文网课:识字为主线,30 分钟一节。',
+    call: '6 岁前不教拼音。故事只许用学过的字,由代码逐字校验,不靠模型自觉。绘本做有声翻页,不做 AI 重绘动画。',
+    now: '验证版搭好了,还差一次真实绘本的端到端跑通。',
+  },
+  'cangjie-skill': {
+    why: '一本好书能不能变成 agent 真的会用的 skill?',
+    call: '蒸馏出来不算数,装与不装对照实测才算。评委先抹掉作者和书名线索,再双向各判一次。',
+    now: 'fork 里加了 measure.py 实测门,拿纳瓦尔和两本读财报的书试过。',
+  },
+  'rsi-quant': {
+    why: '想知道 ETF 轮动加杠杆择时,能不能稳定跑赢 SPY。',
+    call: '回测好看不算数,候选策略过了 lockbox 才算正式盘。',
+    now: '每天凌晨自动研究,几本模拟盘在跑。',
+  },
+  'open-evo-harness': { now: 'PR 已开,在跑基线。' },
+  'open-evo-pipeline': { now: '还在方案分析,没写代码。' },
+  noteweaver: { now: '发到 0.15.0,自己的知识库在用。' },
+  'caibao-skill': { now: '骨架定了,提取还在跑。书有版权,所以仓库私有。' },
+  'lewm-loopedwm': { now: '基线结果已入库,等宿主选型。' },
+  'dllm-eval': { now: '框架设计完了,代码还没写。' },
+  cannbench: { now: '修复已推送,NPU 门禁等实机验证。' },
+  'dllm-deck': { now: '47 页,还在本地,没发布。' },
+  'dgx-spark': { now: '接上了,升级后频繁重启,还在排查。' },
+  'family-os': { now: '主要账户已录入,还有几个连接器要补。' },
+  'flavor-spark': { now: '导入脚本写好了,还没执行。' },
+  boilerplate: { now: '调研做完一轮,技术栈和人群没定。' },
+  'whisper-srt': { now: '跑通了,用它核对过一次引用。' },
+  'trading-agents': { now: '目标价缺失的问题修了,改动还没提交。' },
+  nvo: { now: '发现超出能力圈,先停下来补课。' },
+  atz: { now: '估值做到第四步,最后一步被自己的门禁拦下。' },
+  'rblx-peng': { now: '估值刷新了,门禁没过:反面证据是空的。' },
+};
+
+const principles = [
+  { t: '先做给自己用', d: '看板和家庭数据是我自己要用的,中文课是给家里人的。' },
+  { t: '不信模型自觉', d: '用代码校验、实测门和对照评委,代替"它应该会做对"。' },
+  { t: '也不信自己', d: '投资分析下结论前冷却 48 小时,还要补一条反面证据,否则系统拒绝执行。' },
+  { t: '能只读就只读', d: '连接器只读,不接非官方 API,中心不登录任何机器。' },
+];
+
+const all = groups.flatMap((g) => g.projects).filter((p) => !hidden.includes(p.slug));
+const bySlug = new Map(all.map((p) => [p.slug, p]));
+all.forEach((p) => { if (!copy[p.slug]) throw new Error(`no copy for ${p.slug}`); });
+const total = all.length;
+
+const heroBuild = {
+  slug: 'hero',
+  title: '我怎么造东西',
+  line: '我把想法交给分布在四台机器上的 coding agent,用 agent-pm 看板跟进,同时推进这些项目。',
+  cols: [
+    [{ id: 'me', n: '我', s: '想法与判断' }],
+    [{ id: 'ag', n: 'Coding agent', s: '四台机器,十几个' }],
+    [{ id: 'b', n: 'agent-pm 看板' }],
+    [{ id: 'p', n: '在造的东西', s: `${total} 个`, f: 1 }],
+  ],
+  edges: ['me>ag', 'ag>b', 'b>p'],
+};
+
+const repoLink = (p) => (p.repo ? `<a href="${p.repo}" rel="noopener">GitHub 仓库</a>` : '未公开');
+
+const feature = (slug, i) => {
+  const p = bySlug.get(slug), c = copy[slug];
+  return `<li class="item${i % 2 ? ' item--flip' : ''}" id="${p.slug}">
 <div class="item__text">
-<span class="item__rank" aria-hidden="true">${String(rank).padStart(2, '0')}</span>
 <h3>${esc(p.title)}</h3>
 <p>${esc(p.line)}</p>
-<dl class="meta">
-<div><dt>阶段</dt><dd>${p.stage}</dd></div>
-<div><dt>优先级</dt><dd>${p.pri}</dd></div>
-<div><dt>仓库</dt><dd>${repo}</dd></div>
-${live}</dl>
+<dl class="story">
+<div><dt>为什么造</dt><dd>${esc(c.why)}</dd></div>
+<div><dt>我的判断</dt><dd>${esc(c.call)}</dd></div>
+<div><dt>现在</dt><dd>${esc(c.now)}</dd></div>
+<div><dt>仓库</dt><dd>${repoLink(p)}</dd></div>
+</dl>
 </div>
 <figure class="item__fig cut">${renderDiagram(p)}</figure>
 </li>`;
 };
 
-const section = (g, i) => {
-  const start = rank + 1;
-  return `<section class="group${i % 2 ? ' group--flip' : ''}" id="${g.id}" aria-labelledby="${g.id}-h">
-<div class="container">
-<header class="group__head">
-<h2 id="${g.id}-h">${esc(g.name)}</h2>
-<p class="lead">${esc(g.lead)}</p>
-</header>
-<ol class="items" start="${start}">
-${g.projects.map(item).join('\n')}
-</ol>
+const row = (p) => `<li class="row" id="${p.slug}">
+<h3>${esc(p.title)}</h3>
+<div class="row__body">
+<p>${esc(p.line)}</p>
+<p class="row__now">${esc(copy[p.slug].now)}</p>
+<details>
+<summary>看架构图</summary>
+<figure class="cut row__fig">${renderDiagram(p)}</figure>
+</details>
 </div>
-</section>`;
-};
+<p class="row__repo">${repoLink(p)}</p>
+</li>`;
 
-const sections = groups.map(section).join('\n');
+const restGroups = groups
+  .map((g) => ({ ...g, rest: g.projects.filter((p) => !hidden.includes(p.slug) && !featured.includes(p.slug)) }))
+  .filter((g) => g.rest.length);
+
+const restHtml = restGroups.map((g) => `<div class="rest__group" id="${g.id}">
+<h3 class="rest__name">${esc(g.name)}</h3>
+<ul class="rows">
+${g.rest.map(row).join('\n')}
+</ul>
+</div>`).join('\n');
 
 const html = `<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yiju Zhao 的项目与架构图</title>
-<meta name="description" content="Yiju Zhao 的 ${total} 个项目,按价值排序分成 ${groups.length} 组,每个项目一张架构图,公开仓附 GitHub 链接。">
+<title>Yiju Zhao,一个 builder</title>
+<meta name="description" content="Yiju Zhao 是一个 builder:agent 工具链、给家里人用的产品、给自己设门禁的投资系统。这里是正在造的 ${total} 个东西和它们的架构图。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -627,9 +688,11 @@ const html = `<!doctype html>
 <header class="nav">
 <div class="container nav__in">
 <a class="wordmark" href="#top" aria-label="Yiju Zhao,回到顶部">Yiju Zhao</a>
-<nav class="nav__links" aria-label="项目分组">
-${groups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('\n')}
-<a href="#others">其他公开仓</a>
+<nav class="nav__links" aria-label="页面分区">
+<a href="#about">关于</a>
+<a href="#building">正在造</a>
+<a href="#rest">还在造</a>
+<a href="#others">开源</a>
 </nav>
 <a class="key key--s" href="${GH}" rel="noopener">GitHub</a>
 </div>
@@ -638,25 +701,56 @@ ${groups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('\n')}
 <section class="hero" id="top">
 <div class="container hero__in">
 <div class="hero__text">
-<h1>${total} 个项目,<br>每个一张架构图</h1>
-<p class="lead">按价值排序的开发入口,公开仓直接给 GitHub 链接。</p>
+<h1>我是 Yiju,<br>一个 builder</h1>
+<p class="lead">手上同时在造 ${total} 个东西,多数先做给自己用。</p>
 <p class="hero__actions">
-<a class="key key--primary" href="#p1">从第 1 个看起</a>
-<a class="key" href="#others">其他公开仓</a>
+<a class="key key--primary" href="#building">看我在造什么</a>
+<a class="key" href="#about">关于我</a>
 </p>
 </div>
 <figure class="hero__fig cut">
-${renderDiagram(heroDiagram)}
-<figcaption>蓝框是核心节点,虚线是待定或未完成。</figcaption>
+${renderDiagram(heroBuild)}
+<figcaption>我造东西的方式。下面每个项目都用同一种画法画了架构。</figcaption>
 </figure>
 </div>
 </section>
-${sections}
+<section class="about" id="about" aria-labelledby="about-h">
+<div class="container about__in">
+<div class="about__text">
+<h2 id="about-h">想到就造出来</h2>
+<p class="lead">我喜欢把想法直接做成能用的东西:agent 的工具链、给家里人用的产品、管住自己手的投资系统。</p>
+<p>很多项目的第一个用户是我自己。</p>
+</div>
+<dl class="principles">
+${principles.map((x) => `<div><dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd></div>`).join('\n')}
+</dl>
+</div>
+</section>
+<section class="group" id="building" aria-labelledby="building-h">
+<div class="container">
+<header class="group__head">
+<h2 id="building-h">正在造的四个</h2>
+<p class="lead">每个都写了为什么造、我做了什么取舍、现在到哪了。</p>
+</header>
+<ol class="items">
+${featured.map(feature).join('\n')}
+</ol>
+</div>
+</section>
+<section class="rest" id="rest" aria-labelledby="rest-h">
+<div class="container">
+<header class="group__head">
+<h2 id="rest-h">还在造的 ${total - featured.length} 个</h2>
+<p class="lead">状态照实写,包括没写代码的和被自己拦下的。</p>
+</header>
+${restHtml}
+</div>
+</section>
 <section class="others" id="others" aria-labelledby="others-h">
 <div class="container others__in">
 <header class="others__head">
-<h2 id="others-h">看板之外的公开仓</h2>
-<p class="lead">不在看板上、但已经公开的 ${others.length} 个仓库。</p>
+<h2 id="others-h">已经开源的</h2>
+<p class="lead">造完放出来的 ${others.length} 个仓库。</p>
 </header>
 <ul class="index">
 ${others.map((o) => `<li><h3>${esc(o.name)}</h3><p>${esc(o.line)}</p><p class="index__links"><a href="${o.repo}" rel="noopener">GitHub 仓库</a>${o.live ? `<a href="${o.live}" rel="noopener">线上地址</a>` : ''}</p></li>`).join('\n')}
@@ -667,10 +761,7 @@ ${others.map((o) => `<li><h3>${esc(o.name)}</h3><p>${esc(o.line)}</p><p class="i
 <footer class="footer">
 <div class="container footer__in">
 <p class="wordmark">Yiju Zhao</p>
-<nav class="footer__links" aria-label="页脚">
-<a href="${GH}" rel="noopener">GitHub 主页</a>
-${groups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('\n')}
-</nav>
+<p class="footer__talk">在造类似的东西,或者不同意上面哪条判断,来 <a href="${GH}" rel="noopener">GitHub</a> 找我聊。</p>
 <p class="footer__note">本页由 build.mjs 按看板盘点生成,更新于 <time datetime="${UPDATED}">${UPDATED}</time>。</p>
 </div>
 </footer>
@@ -679,4 +770,4 @@ ${groups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('\n')}
 `;
 
 writeFileSync(new URL('./index.html', import.meta.url), html);
-console.log(`index.html: ${total} projects in ${groups.length} groups, ${others.length} other repos`);
+console.log(`index.html: ${total} builds (${featured.length} featured), ${others.length} open-source repos`);

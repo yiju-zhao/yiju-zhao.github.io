@@ -1,8 +1,8 @@
-/* Hallmark · shape: Catalogue · genre: modern-minimal · theme: Cobalt (deal: manual) · job: visit
- * hero: Stage · nav: a wordmark, the group links and one key · footer: a mast, the wordmark over the links · imagery: none, 27 architecture diagrams drawn by build.mjs · signature: every project drawn as one architecture diagram in one hand
+/* Hallmark · shape: Feature Stack over an Index · genre: modern-minimal · theme: Cobalt (deal: manual) · job: hire
+ * hero: Stage · nav: a wordmark, four section links and one key · footer: a mast, the wordmark over one invitation · imagery: none, architecture diagrams drawn by build.mjs · signature: a builder's own calls, each beside the architecture it produced
  * axes: light/grotesk-sans/cool · posture: restrained · contrast: not measured · fold: not measured · v2.0.0 */
-/* Hallmark · pre-emit critique: not scored · weakest: the page is long, 26 rows of one composition; groups alternate side to break the run */
-/* Hallmark · waive 58 · the owner asked for every project on the board, 26, each with a diagram; the set keeps its true count */
+/* Hallmark · pre-emit critique: not scored · weakest: the about block has no picture of the person; it stays short until the owner supplies one */
+/* Hallmark · waive 58 · the owner asked for every build on the page; the long tail is rows whose diagram opens on demand */
 /* Hallmark · sweep: not run · sloplint and theme.mjs were blocked by the permission check, so the theme was picked by hand and no gate was machine-checked */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -54,8 +54,8 @@
 .item { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); row-gap: var(--space-lg); align-items: center; padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule); }
 .item__text { grid-column: 1 / span 4; grid-row: 1; }
 .item__fig { grid-column: 5 / -1; grid-row: 1; min-width: 0; padding: var(--space-md); }
-.group--flip .item__text { grid-column: 9 / -1; }
-.group--flip .item__fig { grid-column: 1 / span 8; }
+.item--flip .item__text { grid-column: 9 / -1; }
+.item--flip .item__fig { grid-column: 1 / span 8; }
 .item__rank { display: block; margin-bottom: var(--space-xs); font: 500 var(--text-sm)/1 var(--font-outlier); font-variant-numeric: tabular-nums; color: var(--color-muted); }
 .item__text p { margin-top: var(--space-sm); color: var(--color-ink-2); }
 
@@ -95,7 +95,7 @@
 
 @media (max-width: 60rem) {
   .hero__text, .hero__fig, .group__head h2, .group__head .lead,
-  .item__text, .item__fig, .group--flip .item__text, .group--flip .item__fig,
+  .item__text, .item__fig, .item--flip .item__text, .item--flip .item__fig,
   .others__head, .index { grid-column: 1 / -1; }
   .item__text, .item__fig { grid-row: auto; }
   .hero__in, .group__head, .item, .others__in { column-gap: 0; }
@@ -103,3 +103,42 @@
   .index li { grid-template-columns: minmax(0, 1fr); }
   .index__links { justify-content: flex-start; }
 }
+
+/* about */
+.about { padding-block: var(--section-gap-s); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.about__in { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); row-gap: var(--space-2xl); }
+.about__text { grid-column: 1 / span 5; }
+.about__text .lead { margin-top: var(--space-lg); }
+.about__text p + p { margin-top: var(--space-md); color: var(--color-ink-2); }
+.principles { grid-column: 7 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gap-columns); row-gap: var(--space-xl); align-content: start; }
+.principles > div { padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule-2); }
+.principles dt { font: 500 var(--text-title)/1.2 var(--font-display); letter-spacing: var(--tracking-display); }
+.principles dd { margin-top: var(--space-xs); color: var(--color-ink-2); }
+
+/* a featured build: why, the call, where it stands */
+.story { display: grid; row-gap: var(--space-md); margin-top: var(--space-lg); }
+.story dt { font: 500 var(--text-sm)/1.4 var(--font-display); color: var(--color-muted); }
+.story dd { margin-top: var(--space-3xs); }
+
+/* the rest: short rows, diagram on demand */
+.rest { padding-block: var(--section-gap-s); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.rest__group + .rest__group { margin-top: var(--space-2xl); }
+.rest__name { font-size: var(--text-lead); color: var(--color-muted); margin-bottom: var(--space-md); }
+.row { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) 6rem; column-gap: var(--gap-columns); row-gap: var(--space-xs); align-items: baseline; padding-block: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule); }
+.row__body p { color: var(--color-ink-2); }
+.row__body .row__now { margin-top: var(--space-2xs); color: var(--color-ink); font-weight: 500; }
+.row__repo { font-size: var(--text-sm); text-align: right; color: var(--color-muted); white-space: nowrap; }
+.row details { margin-top: var(--space-sm); }
+.row summary { display: inline-block; font-size: var(--text-sm); color: var(--color-muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-rule-2); text-underline-offset: 0.2em; list-style: none; }
+.row summary::-webkit-details-marker { display: none; }
+.row summary:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
+.row__fig { margin-top: var(--space-md); padding: var(--space-md); min-width: 0; }
+.footer__talk { font-size: var(--text-lead); max-width: 30em; }
+
+@media (max-width: 60rem) {
+  .about__in { column-gap: 0; }
+  .about__text, .principles { grid-column: 1 / -1; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .row__repo { text-align: left; }
+}
+@media (max-width: 40rem) { .principles { grid-template-columns: minmax(0, 1fr); } }
