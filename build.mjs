@@ -7,6 +7,8 @@
 import { writeFileSync } from 'node:fs';
 import { identity, copy } from './content.mjs';
 import { englishDiagrams } from './diagram-labels.mjs';
+import { ui } from './experience-ui.mjs';
+import { metadata, buildDiscovery } from './lib/discovery.mjs';
 
 const GH = 'https://github.com/yiju-zhao';
 const UPDATED = '2026-11-12';
@@ -585,7 +587,7 @@ const openSource = others.filter((p) => p.name !== 'Herdeo');
 const arrow = '<span aria-hidden="true">↗</span>';
 
 function buildPage(lang) {
-  const text = copy[lang];
+  const text = copy[lang], u = ui[lang];
   const sourceLink = (p) => p.repo
     ? `<a class="source-link" href="${esc(p.repo)}" rel="noopener" aria-label="${esc(p.title || p.name)} ${esc(text.source)}">${text.source} ${arrow}</a>` : '';
   const project = (p) => {
@@ -612,12 +614,13 @@ function buildPage(lang) {
 </div></details>`;
   const feature = ({ project: original, stack }, i) => {
     const p = project(original), c = text.selectedCopy[p.slug];
-    return `<li class="work" id="${p.slug}">
+    return `<li class="work" id="${p.slug}"><div class="work__text">
 <div class="work__top"><span class="work__number">0${i + 1}</span><span>${esc(c.type)}</span><span class="work__status">${esc(c.status)}</span></div>
 <div class="work__heading"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>${sourceLink(p)}</div>
 <p class="work__intro">${esc(c.description)}</p><p class="work__description">${esc(c.result)}</p>
 <ul class="stack" aria-label="${esc(p.title)} ${esc(text.tools)}">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-${architecture(p, c.detail)}</li>`;
+<details class="implementation"><summary>${text.details}<span class="expand" aria-hidden="true"></span></summary><div class="implementation__body"><p>${esc(c.detail)}</p></div></details></div>
+<figure class="work__visual" id="${p.slug}-visual">${renderDiagram(p, text)}<figcaption><span>${esc(u.sourceLabel)}<span class="scroll-hint"> · ${text.scroll}</span></span><button type="button" data-expand-work aria-expanded="false" aria-controls="${p.slug}-visual">${u.expandDiagram} ↗</button></figcaption></figure></li>`;
   };
   const exploring = (slug) => {
     const p = project(bySlug.get(slug)), c = text.exploring[slug];
@@ -633,41 +636,32 @@ ${architecture(p, c.detail)}</li>`;
   }).join('\n')}</ul></div>`).join('\n');
   const label = (id, pair) => `<header class="section__label"><h2 id="${id}">${esc(pair[0])}</h2><p>${esc(pair[1])}</p></header>`;
   const contacts = `<a href="mailto:${identity.email}">${text.email} ${arrow}</a><a href="${identity.linkedin}" rel="noopener">LinkedIn ${arrow}</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a>`;
+  const mark = '<svg class="assistant-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20M2 12h20M5 5l14 14M5 19L19 5" stroke="currentColor" stroke-width="1.2"/></svg>';
+  const questionButtons = u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}"><span>${esc(q)}</span><span aria-hidden="true">↗</span></button>`).join('');
   const html = `<!doctype html>
 <html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
 <title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
-<link rel="alternate" hreflang="en" href="index.html"><link rel="alternate" hreflang="zh-CN" href="zh.html">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
-</head>
+${metadata(lang)}<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
 <body><a class="skip" href="#main">${text.skip}</a>
-<div class="page"><header class="nav" id="top">
-<a class="wordmark" href="#top" aria-label="${esc(text.home)}">yiju<span aria-hidden="true">.</span></a>
-<nav aria-label="${text.nav}"><a href="#building">${text.work}</a><a href="#about">${text.about}</a><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></nav>
-</header><main id="main">
-<section class="intro" aria-labelledby="name"><p class="eyebrow">${text.role}</p>
-<h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1>
-<p class="intro__identity">${identity.professionalName} <span aria-hidden="true">·</span> ${text.location}</p>
-<p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p>
-<div class="contact-links" aria-label="${text.email}">${contacts}</div></section>
-<section class="section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}
-<div class="background"><ol class="experience">${text.experience.map((entry) => `<li><p class="experience__dates">${esc(entry.dates)}</p><div class="experience__heading"><h3>${esc(entry.organization)}</h3><span>${esc(entry.role)}</span></div><p class="experience__description">${esc(entry.text)}</p></li>`).join('\n')}</ol>
-<div class="education"><h3>${text.education}</h3><ul>${text.degrees.map((d) => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
-<section class="section" id="building" aria-labelledby="work-h">${label('work-h', text.selected)}<ol class="works">${selected.map(feature).join('\n')}</ol></section>
-<section class="section" id="interests" aria-labelledby="interests-h">${label('interests-h', text.interests)}
-<ul class="interests">${text.focus.map((f) => `<li><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map((l) => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</li>`).join('\n')}</ul></section>
+<div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">yiju<span aria-hidden="true">.</span></a>
+<nav class="nav__sections" aria-label="${text.nav}"><a href="#building">${text.work}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
+<div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button><button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>
+<main id="main"><section class="intro" aria-labelledby="name"><div class="intro__text"><p class="eyebrow">${u.heroKicker}</p><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${identity.professionalName} <span aria-hidden="true">·</span> ${text.location}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links" aria-label="${text.email}">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
+<aside class="hero-assistant" aria-labelledby="assistant-teaser-h"><header class="hero-assistant__head"><span class="panel-label">${u.ask}</span>${mark}</header><div class="hero-assistant__body"><h2 id="assistant-teaser-h">${u.assistantTitle}</h2><p>${u.assistantDescription}</p><div class="question-list">${questionButtons}</div></div><footer class="hero-assistant__foot"><span class="status-dot" aria-hidden="true"></span><span data-assistant-mode>${u.assistantMode}</span></footer><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></aside></section>
+<ul class="credentials" aria-label="${text.background[0]}">${u.credentials.map(([label, value]) => `<li><span>${esc(label)}</span><strong>${esc(value)}</strong></li>`).join('')}</ul>
+<section class="section" id="building" aria-labelledby="work-h">${label('work-h', [text.selected[0], u.workLead])}<ol class="works">${selected.map(feature).join('\n')}</ol></section>
+<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<ul class="interests">${text.focus.map(f => `<li><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</li>`).join('\n')}</ul></section>
 <section class="section" id="rest" aria-labelledby="exploring-h">${label('exploring-h', text.experiments)}<ul class="experiments">${exploringSlugs.map(exploring).join('\n')}</ul></section>
-<section class="section" id="others" aria-labelledby="index-h">${label('index-h', text.index)}<div class="project-index">
-<ul class="repo-list">${openSource.map((p) => {
+<section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
+<section class="section index-section" id="others" aria-labelledby="index-h">${label('index-h', text.index)}<div class="project-index"><ul class="repo-list">${openSource.map(p => {
     const description = text.repoDescriptions[p.name];
     if (!description) throw new Error(`Missing ${lang} repo description: ${p.name}`);
     return `<li><a class="repo" href="${esc(p.repo)}" rel="noopener"><h3>${esc(p.name)}</h3><p>${esc(description)}</p><span class="repo__arrow" aria-hidden="true">↗</span></a>${p.live ? `<a class="live-link" href="${esc(p.live)}" rel="noopener">${text.live} ${arrow}</a>` : ''}</li>`;
-  }).join('\n')}</ul>
-<details class="archive" id="archive"><summary><span>${text.archive}</span><span class="expand" aria-hidden="true"></span></summary><div class="archive__body"><p class="archive__note">${text.archiveNote}</p>${archive}</div></details></div></section>
-<section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}
-<div class="about__body">${text.aboutParagraphs.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div></div></section>
-</main><footer class="footer"><a href="#top">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>
+  }).join('\n')}</ul><details class="archive" id="archive"><summary><span>${text.archive}</span><span class="expand" aria-hidden="true"></span></summary><div class="archive__body"><p class="archive__note">${text.archiveNote}</p>${archive}</div></details></div></section>
+<section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}<div class="about__body">${text.aboutParagraphs.map(p => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div></div></section></main>
+<div class="agent-links"><span>${u.profileLinks}</span><a href="recruiters.html">${u.reader} ↗</a><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="#top">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>
+<dialog class="assistant-dialog" id="portfolio-assistant" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="assistant-dialog__inner"><header class="assistant-dialog__header"><div><h2 id="dialog-title">${u.dialogTitle}</h2><p class="assistant-dialog__intro" id="dialog-description">${u.dialogDescription}</p></div><button class="icon-button" data-close-assistant type="button" aria-label="${u.close}">×</button></header><div class="question-list">${questionButtons}</div><form class="assistant-form" id="assistant-form"><input id="assistant-question" name="question" type="text" minlength="2" maxlength="1200" required autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send} ↗</button></form><div id="assistant-result" class="assistant-result" aria-live="polite" aria-atomic="false">${u.empty}</div><footer class="assistant-dialog__footer"><span data-assistant-mode>${u.assistantMode}</span><button data-clear-answer type="button">${u.clear}</button><span>${u.privacy}</span></footer></div></dialog>
 </body></html>`;
   const filename = lang === 'en' ? 'index.html' : 'zh.html';
   writeFileSync(new URL(filename, import.meta.url), html);
@@ -675,3 +669,4 @@ ${architecture(p, c.detail)}</li>`;
 }
 
 for (const lang of ['en', 'zh']) buildPage(lang);
+buildDiscovery();

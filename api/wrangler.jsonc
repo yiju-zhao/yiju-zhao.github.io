@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "yiju-portfolio-assistant",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-12",
+  "workers_dev": true,
+  "vars": {
+    "ANTHROPIC_MODEL": "claude-haiku-5-5",
+    "ALLOWED_ORIGINS": "https://yiju-zhao.github.io",
+    "DAILY_REQUEST_LIMIT": "200"
+  },
+  "ratelimits": [{
+    "name": "RATE_LIMITER",
+    "namespace_id": "218031",
+    "simple": { "limit": 5, "period": 60 }
+  }],
+  "durable_objects": { "bindings": [{ "name": "BUDGET", "class_name": "DailyBudget" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DailyBudget"] }],
+  "observability": { "enabled": false }
+}

@@ -1,0 +1,19 @@
+# Yiju (Eason) Zhao
+
+> Research engineer and builder in Toronto. LLM post-training, agentic RL, recursive self-improvement and agent products.
+
+## Public profile
+
+- [Portfolio](https://yiju-zhao.github.io/): career background, research interests and selected work
+- [Recruiter brief](https://yiju-zhao.github.io/recruiters.html): a concise human-readable overview
+- [Profile Markdown](https://yiju-zhao.github.io/profile.md): career facts and project evidence
+- [Profile JSON](https://yiju-zhao.github.io/profile.json): the same facts as structured data
+- [中文](https://yiju-zhao.github.io/zh.html): Chinese version
+
+## External evidence
+
+- [GitHub](https://github.com/yiju-zhao): public repositories
+- [LinkedIn](https://linkedin.com/in/eason-zhao): professional identity
+- [Open Evo](https://github.com/CARI-DAAL/open-evo): main contributor; current evaluation is ongoing
+
+Updated: 2026-11-12. RSI is an ongoing research direction.

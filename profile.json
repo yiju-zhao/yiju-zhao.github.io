@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-11-12",
+  "url": "https://yiju-zhao.github.io/",
+  "name": "Yiju Zhao",
+  "alternate_names": [
+    "Eason Zhao"
+  ],
+  "location": "Toronto, Canada",
+  "summary": "I work on agents that learn from environment feedback. My work spans LLM post-training, agentic RL, and training-free self-evolution. I also build tools I use every day.",
+  "contact": {
+    "email": "eason.zhao.work@outlook.com",
+    "linkedin": "https://linkedin.com/in/eason-zhao",
+    "github": "https://github.com/yiju-zhao"
+  },
+  "experience": [
+    {
+      "dates": "Sep 2024 – present",
+      "organization": "Huawei · Toronto",
+      "role": "Research Engineer",
+      "text": "LLM post-training and agentic RL for code generation; training-free agent self-evolution, with evaluation and reward infrastructure."
+    },
+    {
+      "dates": "Sep 2018 – May 2024",
+      "organization": "University of Waterloo",
+      "role": "Research Assistant",
+      "text": "Scientific machine learning for quantum materials, including band-structure prediction and physics-informed neural networks."
+    }
+  ],
+  "education": [
+    "PhD, Electrical & Computer Engineering · Waterloo, 2024",
+    "MASc, Electrical & Computer Engineering · Waterloo, 2018",
+    "BSc, Physics · Shanghai Jiao Tong University, 2016"
+  ],
+  "interests": [
+    {
+      "name": "Recursive self-improvement (RSI)",
+      "description": "How far can an agent improve its prompts, tools and workflows while keeping the model fixed? I contribute to Open Evo and work on training-free self-evolution for a Triton kernel-generation agent. Evaluation is ongoing.",
+      "evidence": [
+        {
+          "title": "Open Evo · main contributor",
+          "url": "https://github.com/CARI-DAAL/open-evo"
+        },
+        {
+          "title": "rsi-quant",
+          "url": "https://yiju-zhao.github.io/#rsi-quant"
+        }
+      ]
+    },
+    {
+      "name": "RL & LLM post-training",
+      "description": "I work across SFT, agentic RL (GRPO/PPO), distillation and reward design for code-generation agents. I’m interested in how environment feedback becomes useful training signal, and how to test whether it generalizes.",
+      "evidence": []
+    },
+    {
+      "name": "Agentic systems & evaluation",
+      "description": "Tool use, memory, held-out evaluation and human review are recurring problems in my work. I build the workflows and checks around agents so their output can be tested and traced.",
+      "evidence": [
+        {
+          "title": "herdr-pm",
+          "url": "https://yiju-zhao.github.io/#agent-pm"
+        },
+        {
+          "title": "Noteweaver",
+          "url": "https://yiju-zhao.github.io/#noteweaver"
+        }
+      ]
+    },
+    {
+      "name": "Products for knowledge work",
+      "description": "I’m a co-founder and technical lead at OneSent, building document workflows from upload and extraction to human review. Knowledge management and language learning are other areas I build for.",
+      "evidence": [
+        {
+          "title": "Noteweaver",
+          "url": "https://yiju-zhao.github.io/#noteweaver"
+        },
+        {
+          "title": "openlingo",
+          "url": "https://yiju-zhao.github.io/#openlingo"
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "agent-pm",
+      "name": "herdr-pm",
+      "description": "A project board for Claude Code and Codex sessions running across multiple machines.",
+      "implementation": "Each machine reads its local sessions and pushes updates to a central SQLite service. The service exposes a web interface and MCP tools. Collectors advance their cursors after acknowledgement so interrupted transfers can resume.",
+      "status": "Personal use",
+      "technologies": [
+        "TypeScript",
+        "SQLite",
+        "MCP"
+      ],
+      "evidence": [
+        "https://github.com/yiju-zhao/herdr-pm",
+        "https://yiju-zhao.github.io/#agent-pm"
+      ]
+    },
+    {
+      "id": "noteweaver",
+      "name": "Noteweaver",
+      "description": "A knowledge bank in Obsidian where claims keep their sources and agents follow the same rules as daily editing.",
+      "implementation": "The Obsidian plugin handles daily editing. The Agent plugin provides skills for queries, writing and research. Each vault defines its own schema and policies. Structure checks and factual verification are separate operations.",
+      "status": "Open source",
+      "technologies": [
+        "TypeScript",
+        "Obsidian",
+        "Node.js"
+      ],
+      "evidence": [
+        "https://github.com/yiju-zhao/noteweaver",
+        "https://yiju-zhao.github.io/#noteweaver"
+      ]
+    },
+    {
+      "id": "herdeo",
+      "name": "Herdeo",
+      "description": "Use the native terminal at your desk, then continue the same agent session from your phone.",
+      "implementation": "Codex, Claude Code and Pi each use their own connection mechanism. The bridge connects to the native process already running in the terminal. Remote input currently supports plain text; advanced CLI operations stay in the terminal.",
+      "status": "Open source",
+      "technologies": [
+        "Node.js",
+        "Herdr",
+        "Paseo"
+      ],
+      "evidence": [
+        "https://github.com/yiju-zhao/Herdeo",
+        "https://yiju-zhao.github.io/#herdeo"
+      ]
+    }
+  ],
+  "role_interests": [
+    {
+      "role": "Research engineering / LLM post-training",
+      "evidence": [
+        "https://yiju-zhao.github.io/#background",
+        "https://yiju-zhao.github.io/#interests"
+      ]
+    },
+    {
+      "role": "Agent infrastructure & evaluation",
+      "evidence": [
+        "https://yiju-zhao.github.io/#agent-pm",
+        "https://yiju-zhao.github.io/#interests"
+      ]
+    },
+    {
+      "role": "Agent products",
+      "evidence": [
+        "https://yiju-zhao.github.io/#noteweaver",
+        "https://yiju-zhao.github.io/#interests"
+      ]
+    }
+  ],
+  "boundaries": [
+    "RSI is an ongoing research direction.",
+    "Current Open Evo evaluation is ongoing.",
+    "rsi-quant is strategy research using paper portfolios; verified investment performance has not been published.",
+    "The cangjie-skill contribution is a fork with added controlled evaluation."
+  ],
+  "machine_readable": {
+    "markdown": "https://yiju-zhao.github.io/profile.md",
+    "json": "https://yiju-zhao.github.io/profile.json"
+  }
+}

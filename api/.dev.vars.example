@@ -1,0 +1,3 @@
+# Copy locally to .dev.vars; never commit the real key.
+ANTHROPIC_API_KEY=replace-in-your-local-secret-store
+ALLOWED_ORIGINS=http://localhost:4173,http://127.0.0.1:4173

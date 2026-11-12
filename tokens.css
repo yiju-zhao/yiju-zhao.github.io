@@ -1,17 +1,40 @@
-/* Quiet typography, one blue accent, and enough space for the work. */
+/* Warm paper, ink, and a single botanical accent. */
 :root {
-  --color-paper: #fcfcfb;
-  --color-paper-2: #f4f5f4;
-  --color-ink: #24272b;
-  --color-ink-2: #51565e;
-  --color-muted: #6e747c;
-  --color-rule: #e5e7e8;
-  --color-rule-2: #c7cbd0;
-  --color-accent: #295bd5;
-  --color-accent-wash: #edf2ff;
-  --color-focus: #295bd5;
+  color-scheme: light;
+  --color-paper: #f7f7f2;
+  --color-paper-2: #edeee7;
+  --color-card: #fdfdf9;
+  --color-ink: #202d26;
+  --color-ink-2: #536157;
+  --color-muted: #69756c;
+  --color-rule: #dce1d6;
+  --color-rule-2: #bcc7b6;
+  --color-accent: #386548;
+  --color-accent-wash: #e1ebd7;
+  --color-focus: #386548;
+  --color-stage: #e9eddf;
+  --color-dark: #23372c;
+  --color-dark-ink: #f1f5e9;
   --font-cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei";
   --font-display: "Helvetica Neue", Helvetica, Arial, var(--font-cjk), sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", var(--font-cjk), sans-serif;
+  --font-editorial: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, var(--font-cjk), serif;
   --font-outlier: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #141c17;
+  --color-paper-2: #202a23;
+  --color-card: #19231d;
+  --color-ink: #e5ebdf;
+  --color-ink-2: #b5c1b3;
+  --color-muted: #a0b09e;
+  --color-rule: #334238;
+  --color-rule-2: #566b56;
+  --color-accent: #bad5a4;
+  --color-accent-wash: #31462f;
+  --color-focus: #bad5a4;
+  --color-stage: #253428;
+  --color-dark: #2d4433;
+  --color-dark-ink: #f1f5e9;
 }
