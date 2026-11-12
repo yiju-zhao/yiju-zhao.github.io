@@ -23,10 +23,10 @@ const groups = [
     projects: [
       {
         slug: 'agent-pm',
-        title: 'agent-pm',
+        title: 'herdr-pm',
         line: '把多台机器上的 agent session 汇总到一个中心,按项目看进度。',
         stage: '验证', pri: 'P1',
-        repo: `${GH}/agent-pm`,
+        repo: `${GH}/herdr-pm`,
         cols: [
           [{ id: 'snap', n: 'herdr 快照' }, { id: 'log', n: '对话文件', s: 'Claude Code 与 Codex' }],
           [{ id: 'col', n: '采集器', s: '每台机器一个' }],
@@ -555,120 +555,137 @@ ${boxes.join('\n')}
 
 // ---------------------------------------------------------------- page
 
-// The page is about a builder, not a board. Four builds are told in full
-// (why, the call I made, where it stands); the rest are short rows whose
-// diagram opens on demand.
-const featured = ['agent-pm', 'openlingo', 'cangjie-skill', 'rsi-quant'];
-
-// Personal operations, kept off the public page.
+// A portfolio is edited for readers; the full board remains a secondary index.
+// Sources and the reasoning for this selection are in research/portfolio-references.md.
 const hidden = ['cbrs', 'a-share', 'h-level', 'applications', 'job-survey'];
-
-const copy = {
-  'agent-pm': {
-    why: '同时开着十几个 agent,分在四台机器上,我记不住谁在做哪件事。',
-    call: '中心不 ssh 任何机器。采集器只推不拉,游标等中心确认才前进,断网重启不丢不重。',
-    now: '在四台机器上跑着,这个页面的项目清单就来自它。',
-  },
-  openlingo: {
-    why: '想替掉现在上的中文网课:识字为主线,30 分钟一节。',
-    call: '6 岁前不教拼音。故事只许用学过的字,由代码逐字校验,不靠模型自觉。绘本做有声翻页,不做 AI 重绘动画。',
-    now: '验证版搭好了,还差一次真实绘本的端到端跑通。',
-  },
-  'cangjie-skill': {
-    why: '一本好书能不能变成 agent 真的会用的 skill?',
-    call: '蒸馏出来不算数,装与不装对照实测才算。评委先抹掉作者和书名线索,再双向各判一次。',
-    now: 'fork 里加了 measure.py 实测门,拿纳瓦尔和两本读财报的书试过。',
-  },
-  'rsi-quant': {
-    why: '想知道 ETF 轮动加杠杆择时,能不能稳定跑赢 SPY。',
-    call: '回测好看不算数,候选策略过了 lockbox 才算正式盘。',
-    now: '每天凌晨自动研究,几本模拟盘在跑。',
-  },
-  'open-evo-harness': { now: 'PR 已开,在跑基线。' },
-  'open-evo-pipeline': { now: '还在方案分析,没写代码。' },
-  noteweaver: { now: '发到 0.15.0,自己的知识库在用。' },
-  'caibao-skill': { now: '骨架定了,提取还在跑。书有版权,所以仓库私有。' },
-  'lewm-loopedwm': { now: '基线结果已入库,等宿主选型。' },
-  'dllm-eval': { now: '框架设计完了,代码还没写。' },
-  cannbench: { now: '修复已推送,NPU 门禁等实机验证。' },
-  'dllm-deck': { now: '47 页,还在本地,没发布。' },
-  'dgx-spark': { now: '接上了,升级后频繁重启,还在排查。' },
-  'family-os': { now: '主要账户已录入,还有几个连接器要补。' },
-  'flavor-spark': { now: '导入脚本写好了,还没执行。' },
-  boilerplate: { now: '调研做完一轮,技术栈和人群没定。' },
-  'whisper-srt': { now: '跑通了,用它核对过一次引用。' },
-  'trading-agents': { now: '目标价缺失的问题修了,改动还没提交。' },
-  nvo: { now: '发现超出能力圈,先停下来补课。' },
-  atz: { now: '估值做到第四步,最后一步被自己的门禁拦下。' },
-  'rblx-peng': { now: '估值刷新了,门禁没过:反面证据是空的。' },
-};
-
-const principles = [
-  { t: '先做给自己用', d: '看板和家庭数据是我自己要用的,中文课是给家里人的。' },
-  { t: '不信模型自觉', d: '用代码校验、实测门和对照评委,代替"它应该会做对"。' },
-  { t: '也不信自己', d: '投资分析下结论前冷却 48 小时,还要补一条反面证据,否则系统拒绝执行。' },
-  { t: '能只读就只读', d: '连接器只读,不接非官方 API,中心不登录任何机器。' },
-];
-
 const all = groups.flatMap((g) => g.projects).filter((p) => !hidden.includes(p.slug));
 const bySlug = new Map(all.map((p) => [p.slug, p]));
-all.forEach((p) => { if (!copy[p.slug]) throw new Error(`no copy for ${p.slug}`); });
-const total = all.length;
 
-const heroBuild = {
-  slug: 'hero',
-  title: '我怎么造东西',
-  line: '我把想法交给分布在四台机器上的 coding agent,用 agent-pm 看板跟进,同时推进这些项目。',
+const herdeo = {
+  slug: 'herdeo', title: 'Herdeo', repo: `${GH}/Herdeo`,
+  line: '把 Herdr 里的原生 coding agent 会话接到 Paseo，在电脑和手机上继续同一段工作。',
   cols: [
-    [{ id: 'me', n: '我', s: '想法与判断' }],
-    [{ id: 'ag', n: 'Coding agent', s: '四台机器,十几个' }],
-    [{ id: 'b', n: 'agent-pm 看板' }],
-    [{ id: 'p', n: '在造的东西', s: `${total} 个`, f: 1 }],
+    [{ id: 'cli', n: 'Herdr 原生 CLI', s: 'Codex / Claude / Pi' }],
+    [{ id: 'bridge', n: 'Herdeo', s: '消息、工具与授权', f: 1 }],
+    [{ id: 'daemon', n: 'Paseo daemon' }],
+    [{ id: 'client', n: '手机与桌面客户端', s: '同一个原生会话' }],
   ],
-  edges: ['me>ag', 'ag>b', 'b>p'],
+  edges: ['cli>bridge', 'bridge>daemon', 'daemon>client'],
 };
 
-const repoLink = (p) => (p.repo ? `<a href="${p.repo}" rel="noopener">GitHub 仓库</a>` : '未公开');
+const selected = [
+  {
+    project: bySlug.get('agent-pm'), type: 'Agent workflow', status: '个人使用中',
+    description: '为多台机器上的 Claude Code 和 Codex 会话做的项目看板。',
+    result: '按项目查看进度、决策和待处理的问题，也能追溯到原始会话。',
+    detail: '每台机器的采集器只读本地会话，再推送到中心。中心用 SQLite 保存记录，同时提供网页和 MCP 接口。采集游标在收到确认后才前进，断线后可以续传。',
+    stack: ['TypeScript', 'SQLite', 'MCP'],
+  },
+  {
+    project: bySlug.get('noteweaver'), type: 'Personal knowledge', status: '开源',
+    description: '让 agent 帮忙整理知识，也让每条结论保留可以回头查的出处。',
+    result: '在原生 Obsidian 里管理知识页、断言和证据。同一套规则供日常编辑与离线校验使用。',
+    detail: '共享的 TypeScript 内核负责校验与变更计划，Obsidian 插件负责日常编辑，Agent 插件提供查询、写入、研究等技能。每个知识库自己定义 schema 和政策。结构校验与事实核查分别处理。',
+    stack: ['Obsidian', 'TypeScript', 'Agent skills'],
+  },
+  {
+    project: herdeo, type: 'Cross-device tooling', status: '开源',
+    description: '电脑前用原生终端，离开电脑后，手机也能接着处理同一个 agent 会话。',
+    result: '连接 Herdr 和 Paseo，同步消息、工具结果与支持的授权请求，保留原生 CLI 的交互。',
+    detail: 'Codex、Claude Code 和 Pi 使用各自的接入方式。桥接连接终端里已有的原生进程；手机和电脑操作的是同一个会话。当前远程输入支持纯文本，高级 CLI 操作仍在终端进行。',
+    stack: ['Node.js', 'Herdr', 'Paseo'],
+  },
+];
 
-const feature = (slug, i) => {
-  const p = bySlug.get(slug), c = copy[slug];
-  return `<li class="item${i % 2 ? ' item--flip' : ''}" id="${p.slug}">
-<div class="item__text">
-<h3>${esc(p.title)}</h3>
-<p>${esc(p.line)}</p>
-<dl class="story">
-<div><dt>为什么造</dt><dd>${esc(c.why)}</dd></div>
-<div><dt>我的判断</dt><dd>${esc(c.call)}</dd></div>
-<div><dt>现在</dt><dd>${esc(c.now)}</dd></div>
-<div><dt>仓库</dt><dd>${repoLink(p)}</dd></div>
-</dl>
+const explorations = [
+  {
+    slug: 'cangjie-skill', title: 'cangjie-skill', label: 'Fork / 评测',
+    description: '把书和长内容蒸馏成 skill。在 fork 里加入装与不装的对照评测，检查它是否真的改变了 agent 的表现。',
+    note: '增加 measure.py 实测门；评委先去掉作者与书名线索，再双向判分。',
+  },
+  {
+    slug: 'openlingo', title: 'openlingo', label: '产品原型',
+    description: '以识字为主线的中文学习产品：绘本、有声翻页，以及按已学汉字生成的故事。',
+    note: '故事用字由代码逐字校验。验证版已搭建，真实绘本的端到端流程仍待验证。',
+  },
+  {
+    slug: 'rsi-quant', title: 'rsi-quant', label: '研究 / 模拟盘',
+    description: '研究 ETF 轮动与杠杆择时，把策略生成、回测和样本外验证接成一条流水线。',
+    note: '自动研究与模拟盘在运行。回测候选需要经过 lockbox 验证；这里展示的是研究系统。',
+  },
+];
+
+// These notes are a dated snapshot, not a live activity feed.
+const notes = {
+  'open-evo-harness': '原生 harness 与网关用量统计；PR 已开，正在跑基线。',
+  'open-evo-pipeline': '并发评估与顺序提交的方案分析，尚未实现。',
+  'caibao-skill': '通用财报与银行财报的 skill 提取，仓库私有。',
+  'lewm-loopedwm': '基线实验结果已入库，等待宿主选型。',
+  'dllm-eval': '评测与负载分析框架的设计阶段。',
+  cannbench: 'Converter 修复已推送，NPU 验证待实机完成。',
+  'dllm-deck': 'dLLM 负载分析的 47 页本地演示文稿。',
+  'dgx-spark': '设备已接入，升级后的重启问题仍在排查。',
+  'family-os': '家庭数据与账户的只读连接器，仍在补齐数据来源。',
+  'flavor-spark': '数据导入脚本已编写，尚未执行。',
+  boilerplate: '完成一轮调研，目标用户与技术栈尚未确定。',
+  'whisper-srt': '音频转字幕工具，已用于引用核对。',
+  'trading-agents': '目标价缺失问题的修复，尚未提交。',
+  nvo: '公司研究笔记，暂缓结论，补充行业知识。',
+  atz: '财报阅读与估值笔记，尚未完成验证。',
+  'rblx-peng': '财报与估值复核，仍待补充反面证据。',
+};
+
+const arrow = '<span aria-hidden="true">↗</span>';
+const sourceLink = (p, label = '源码') => p.repo
+  ? `<a class="source-link" href="${esc(p.repo)}" rel="noopener" aria-label="${esc(p.title || p.name)} ${label}">${label} ${arrow}</a>`
+  : '';
+
+const architecture = (p, note) => `<details class="implementation">
+<summary>实现细节 <span class="expand" aria-hidden="true"></span></summary>
+<div class="implementation__body">
+${note ? `<p>${esc(note)}</p>` : ''}
+<figure class="architecture">
+${renderDiagram(p)}
+<figcaption>架构概览<span class="scroll-hint"> · 可横向查看</span></figcaption>
+</figure>
 </div>
-<figure class="item__fig cut">${renderDiagram(p)}</figure>
+</details>`;
+
+const feature = ({ project: p, type, status, description, result, detail, stack }, i) => `<li class="work" id="${p.slug}">
+<div class="work__top"><span class="work__number">0${i + 1}</span><span>${esc(type)}</span><span class="work__status">${esc(status)}</span></div>
+<div class="work__heading"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>${sourceLink(p)}</div>
+<p class="work__intro">${esc(description)}</p>
+<p class="work__description">${esc(result)}</p>
+<ul class="stack" aria-label="${esc(p.title)} 技术与工具">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+${architecture(p, detail)}
+</li>`;
+
+const exploring = (entry) => {
+  const p = bySlug.get(entry.slug);
+  return `<li class="experiment" id="${entry.slug}">
+<div class="experiment__heading"><h3>${esc(entry.title)}</h3><span class="project-kind">${esc(entry.label)}</span>${sourceLink(p)}</div>
+<p>${esc(entry.description)}</p>
+${architecture(p, entry.note)}
 </li>`;
 };
 
-const row = (p) => `<li class="row" id="${p.slug}">
-<h3>${esc(p.title)}</h3>
-<div class="row__body">
-<p>${esc(p.line)}</p>
-<p class="row__now">${esc(copy[p.slug].now)}</p>
-<details>
-<summary>看架构图</summary>
-<figure class="cut row__fig">${renderDiagram(p)}</figure>
-</details>
-</div>
-<p class="row__repo">${repoLink(p)}</p>
+const featuredSlugs = selected.map((x) => x.project.slug);
+const exploringSlugs = explorations.map((x) => x.slug);
+const archiveGroups = groups.map((g) => ({
+  ...g, projects: g.projects.filter((p) => !hidden.includes(p.slug) && !featuredSlugs.includes(p.slug) && !exploringSlugs.includes(p.slug)),
+})).filter((g) => g.projects.length);
+const openSource = others.filter((p) => p.name !== 'Herdeo');
+
+const archive = archiveGroups.map((g) => `<div class="archive-group" id="${g.id}">
+<h3>${esc(g.name)}</h3>
+<ul>${g.projects.map((p) => {
+  if (!notes[p.slug]) throw new Error(`Missing portfolio note: ${p.slug}`);
+  return `<li id="${p.slug}" class="archive-item">
+<div class="archive-item__heading"><h4>${esc(p.title)}</h4>${sourceLink(p)}</div>
+<p>${esc(notes[p.slug])}</p>
+${architecture(p)}
 </li>`;
-
-const restGroups = groups
-  .map((g) => ({ ...g, rest: g.projects.filter((p) => !hidden.includes(p.slug) && !featured.includes(p.slug)) }))
-  .filter((g) => g.rest.length);
-
-const restHtml = restGroups.map((g) => `<div class="rest__group" id="${g.id}">
-<h3 class="rest__name">${esc(g.name)}</h3>
-<ul class="rows">
-${g.rest.map(row).join('\n')}
-</ul>
+}).join('\n')}</ul>
 </div>`).join('\n');
 
 const html = `<!doctype html>
@@ -676,98 +693,52 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yiju Zhao,一个 builder</title>
-<meta name="description" content="Yiju Zhao 是一个 builder:agent 工具链、给家里人用的产品、给自己设门禁的投资系统。这里是正在造的 ${total} 个东西和它们的架构图。">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light">
+<title>Yiju Zhao — Builder</title>
+<meta name="description" content="Yiju Zhao 的个人作品集。AI agent 工具、个人知识库，以及一些日常会用的软件。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <a class="skip" href="#main">跳到正文</a>
-<header class="nav">
-<div class="container nav__in">
-<a class="wordmark" href="#top" aria-label="Yiju Zhao,回到顶部">Yiju Zhao</a>
-<nav class="nav__links" aria-label="页面分区">
-<a href="#about">关于</a>
-<a href="#building">正在造</a>
-<a href="#rest">还在造</a>
-<a href="#others">开源</a>
-</nav>
-<a class="key key--s" href="${GH}" rel="noopener">GitHub</a>
-</div>
+<div class="page">
+<header class="nav" id="top">
+<a class="wordmark" href="#top" aria-label="Yiju Zhao，回到顶部">yiju<span aria-hidden="true">.</span></a>
+<nav aria-label="主导航"><a href="#building">作品</a><a href="#about">关于</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a></nav>
 </header>
 <main id="main">
-<section class="hero" id="top">
-<div class="container hero__in">
-<div class="hero__text">
-<h1>我是 Yiju,<br>一个 builder</h1>
-<p class="lead">手上同时在造 ${total} 个东西,多数先做给自己用。</p>
-<p class="hero__actions">
-<a class="key key--primary" href="#building">看我在造什么</a>
-<a class="key" href="#about">关于我</a>
-</p>
-</div>
-<figure class="hero__fig cut">
-${renderDiagram(heroBuild)}
-<figcaption>我造东西的方式。下面每个项目都用同一种画法画了架构。</figcaption>
-</figure>
+<section class="intro" aria-labelledby="name">
+<p class="eyebrow">Builder</p>
+<h1 id="name">Yiju Zhao<span aria-hidden="true">.</span></h1>
+<p class="intro__description">做 AI agent 工具，也做一些日常会用的软件。</p>
+</section>
+<section class="section" id="building" aria-labelledby="work-h">
+<header class="section__label"><h2 id="work-h">作品</h2><p>Selected work</p></header>
+<ol class="works">${selected.map(feature).join('\n')}</ol>
+</section>
+<section class="section" id="rest" aria-labelledby="exploring-h">
+<header class="section__label"><h2 id="exploring-h">实验与研究</h2><p>In progress</p></header>
+<ul class="experiments">${explorations.map(exploring).join('\n')}</ul>
+</section>
+<section class="section" id="others" aria-labelledby="index-h">
+<header class="section__label"><h2 id="index-h">其他项目</h2><p>Project index</p></header>
+<div class="project-index">
+<ul class="repo-list">${openSource.map((p) => `<li><a class="repo" href="${esc(p.repo)}" rel="noopener"><h3>${esc(p.name)}</h3><p>${esc(p.line)}</p><span class="repo__arrow" aria-hidden="true">↗</span></a>${p.live ? `<a class="live-link" href="${esc(p.live)}" rel="noopener">打开网站 ${arrow}</a>` : ''}</li>`).join('\n')}</ul>
+<details class="archive" id="archive"><summary><span>更多实验与项目记录</span><span class="expand" aria-hidden="true"></span></summary>
+<div class="archive__body"><p class="archive__note">截至 <time datetime="${UPDATED}">${UPDATED}</time> 的记录，包含设计中、验证中和暂缓的项目。</p>${archive}</div>
+</details>
 </div>
 </section>
-<section class="about" id="about" aria-labelledby="about-h">
-<div class="container about__in">
-<div class="about__text">
-<h2 id="about-h">想到就造出来</h2>
-<p class="lead">我喜欢把想法直接做成能用的东西:agent 的工具链、给家里人用的产品、管住自己手的投资系统。</p>
-<p>很多项目的第一个用户是我自己。</p>
-</div>
-<dl class="principles">
-${principles.map((x) => `<div><dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd></div>`).join('\n')}
-</dl>
-</div>
-</section>
-<section class="group" id="building" aria-labelledby="building-h">
-<div class="container">
-<header class="group__head">
-<h2 id="building-h">正在造的四个</h2>
-<p class="lead">每个都写了为什么造、我做了什么取舍、现在到哪了。</p>
-</header>
-<ol class="items">
-${featured.map(feature).join('\n')}
-</ol>
-</div>
-</section>
-<section class="rest" id="rest" aria-labelledby="rest-h">
-<div class="container">
-<header class="group__head">
-<h2 id="rest-h">还在造的 ${total - featured.length} 个</h2>
-<p class="lead">状态照实写,包括没写代码的和被自己拦下的。</p>
-</header>
-${restHtml}
-</div>
-</section>
-<section class="others" id="others" aria-labelledby="others-h">
-<div class="container others__in">
-<header class="others__head">
-<h2 id="others-h">已经开源的</h2>
-<p class="lead">造完放出来的 ${others.length} 个仓库。</p>
-</header>
-<ul class="index">
-${others.map((o) => `<li><h3>${esc(o.name)}</h3><p>${esc(o.line)}</p><p class="index__links"><a href="${o.repo}" rel="noopener">GitHub 仓库</a>${o.live ? `<a href="${o.live}" rel="noopener">线上地址</a>` : ''}</p></li>`).join('\n')}
-</ul>
-</div>
+<section class="section about" id="about" aria-labelledby="about-h">
+<header class="section__label"><h2 id="about-h">关于我</h2><p>A little about me</p></header>
+<div class="about__body"><p>我是 Yiju。我用 Claude Code 和 Codex 做项目，兴趣从 agent 工具延伸到知识管理、中文学习和量化研究。很多项目的第一个用户是我自己。</p><p>代码和项目进展放在 <a href="${GH}" rel="noopener">GitHub ${arrow}</a>。欢迎交流。</p></div>
 </section>
 </main>
-<footer class="footer">
-<div class="container footer__in">
-<p class="wordmark">Yiju Zhao</p>
-<p class="footer__talk">在造类似的东西,或者不同意上面哪条判断,来 <a href="${GH}" rel="noopener">GitHub</a> 找我聊。</p>
-<p class="footer__note">本页由 build.mjs 按看板盘点生成,更新于 <time datetime="${UPDATED}">${UPDATED}</time>。</p>
+<footer class="footer"><a href="#top">Yiju Zhao</a><span>更新于 <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer>
 </div>
-</footer>
 </body>
 </html>
 `;
 
 writeFileSync(new URL('./index.html', import.meta.url), html);
-console.log(`index.html: ${total} builds (${featured.length} featured), ${others.length} open-source repos`);
+console.log(`index.html: ${selected.length} selected, ${explorations.length} explorations, ${openSource.length} other repos, ${archiveGroups.reduce((n, g) => n + g.projects.length, 0)} archived records`);

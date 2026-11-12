@@ -1,31 +1,16 @@
-/* What the Hallmark Floor already decides: clipping, focus, motion, type defaults, the container. */
 *, *::before, *::after { box-sizing: border-box; }
-html { overflow-x: clip; scroll-padding-top: calc(var(--nav-h) + var(--space-lg)); -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; overflow-x: clip;
-  background: var(--color-paper); color: var(--color-ink);
-  font: 400 var(--text-md)/1.6 var(--font-body);
-  font-synthesis: none; -webkit-font-smoothing: antialiased;
-}
-h1, h2, h3, p, ol, ul, dl, dd, figure { margin: 0; }
+html { scroll-padding-top: 24px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--color-paper); color: var(--color-ink); font: 400 15px/1.8 var(--font-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p, ol, ul, figure { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
-h1, h2, h3 {
-  font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-display);
-  color: var(--color-ink); text-wrap: balance; overflow-wrap: break-word; min-width: 0;
-}
-h1 { font-size: var(--text-display); line-height: 1.08; }
-h2 { font-size: var(--text-section); line-height: 1.1; }
-h3 { font-size: var(--text-title); line-height: 1.2; font-weight: 500; }
-p { text-wrap: pretty; }
-.lead { font-size: var(--text-lead); line-height: 1.45; color: var(--color-ink-2); }
-a { color: inherit; text-decoration-line: underline; text-decoration-color: var(--color-rule-2); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
-a:hover { text-decoration-color: var(--color-accent); }
-:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-::selection { background: var(--color-accent-wash); color: var(--color-ink); }
-svg { max-width: 100%; }
-.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
-.skip { position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); background: var(--color-ink); color: var(--color-paper); }
-.skip:focus-visible { top: var(--space-md); }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
-}
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; }
+a { color: inherit; text-decoration-color: var(--color-rule-2); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+a:hover { color: var(--color-accent); text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 5px; border-radius: 2px; }
+::selection { background: #dfe9ff; }
+.skip { position: absolute; top: -100px; left: 24px; padding: 8px 16px; background: var(--color-ink); color: white; z-index: 10; }
+.skip:focus-visible { top: 12px; }
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::marker { content: ""; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
