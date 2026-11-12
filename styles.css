@@ -114,3 +114,37 @@ details[open] > summary .expand::after { transform: rotate(90deg); }
   .intro__description { font-size: 18px; }
   .experiment__heading { gap: 4px 9px; }
 }
+
+/* Career context uses the same quiet hierarchy as the work index. */
+.intro { padding-block: 88px 64px; }
+.intro__identity { margin-top: 15px; color: var(--color-muted); font-size: 13px; }
+.intro__identity > span { padding-inline: 6px; }
+.intro__description { max-width: 34em; margin-top: 24px; }
+.intro__context { max-width: 48em; margin-top: 10px; color: var(--color-ink-2); font-size: 14px; }
+.contact-links { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; }
+.contact-links a { font-size: 12px; text-decoration: none; padding-block: 5px; }
+.nav nav .language-switch { padding-inline: 9px; border: 1px solid var(--color-rule); border-radius: 4px; line-height: 1.2; }
+.background { min-width: 0; }
+.experience > li + li { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--color-rule); }
+.experience__dates { font: 11px/1.6 var(--font-outlier); color: var(--color-muted); margin-bottom: 7px; }
+.experience__heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 14px; }
+.experience__heading h3 { font-size: 17px; letter-spacing: -.025em; }
+.experience__heading > span { font-size: 12px; color: var(--color-muted); }
+.experience__description { margin-top: 9px; font-size: 14px; color: var(--color-ink-2); }
+.education { border-top: 1px solid var(--color-rule); margin-top: 24px; padding-top: 20px; }
+.education h3 { font-size: 12px; color: var(--color-muted); margin-bottom: 8px; }
+.education li { font-size: 12px; color: var(--color-ink-2); }
+.education li + li { margin-top: 4px; }
+.interests { min-width: 0; }
+.interests > li + li { border-top: 1px solid var(--color-rule); margin-top: 25px; padding-top: 25px; }
+.interests h3 { font-size: 17px; letter-spacing: -.025em; }
+.interests p { font-size: 14px; color: var(--color-ink-2); margin-top: 9px; }
+.interest-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; }
+.interest-links a { font-size: 12px; color: var(--color-accent); text-decoration: none; padding-block: 4px; }
+.section__label { min-width: 0; }
+.section__label h2 { line-height: 1.7; }
+@media (max-width: 760px) {
+  .intro { padding-block: 64px 48px; }
+  .intro__context { max-width: 36em; font-size: 13px; }
+  .section__label { flex-wrap: wrap; gap: 3px 12px; }
+}

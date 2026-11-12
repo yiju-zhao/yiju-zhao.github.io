@@ -5,9 +5,11 @@
 // 2 focal nodes). The build fails if a label overflows its box or two
 // connectors cross or overlap, so a bad diagram never ships silently.
 import { writeFileSync } from 'node:fs';
+import { identity, copy } from './content.mjs';
+import { englishDiagrams } from './diagram-labels.mjs';
 
 const GH = 'https://github.com/yiju-zhao';
-const UPDATED = '2026-11-11';
+const UPDATED = '2026-11-12';
 
 // ---------------------------------------------------------------- data
 
@@ -253,15 +255,15 @@ const groups = [
       {
         slug: 'rsi-quant',
         title: 'rsi-quant',
-        line: 'ETF 轮动与杠杆择时,每日研究,过 lockbox 才进模拟盘。',
+        line: 'LLM 提出量化策略改动，确定性引擎执行冻结协议下的评估，人工审核工作流变更。',
         stage: '验证', pri: 'P1',
         cols: [
-          [{ id: 'job', n: '每日研究任务', s: '03:00', m: 1 }],
-          [{ id: 'cand', n: '候选策略' }],
-          [{ id: 'lock', n: 'lockbox 检验', s: 'deflated Sharpe', f: 1 }],
-          [{ id: 'paper', n: '模拟盘正式盘', s: '每日运行' }, { id: 'watch', n: '观察盘' }],
+          [{ id: 'job', n: '研究循环', s: 'LLM 提案' }],
+          [{ id: 'cand', n: '候选策略代码' }],
+          [{ id: 'lock', n: '冻结评估协议', s: '交易成本与留出集', f: 1 }],
+          [{ id: 'paper', n: '模拟盘', s: '每日运行' }, { id: 'watch', n: '工作流变更提案', s: '人工合并' }],
         ],
-        edges: ['job>cand', 'cand>lock', 'lock>paper', 'lock>watch'],
+        edges: ['job>cand', 'cand>lock', 'lock>paper'],
       },
       {
         slug: 'trading-agents',
@@ -439,7 +441,7 @@ function conflicts(sa, sb) {
   return n;
 }
 
-function renderDiagram(d) {
+function renderDiagram(d, text) {
   const fail = (msg) => { throw new Error(`[${d.slug}] ${msg}`); };
   const n = d.cols.length;
   const nw = NODE_W[n] ?? fail(`unsupported column count ${n}`);
@@ -542,9 +544,9 @@ function renderDiagram(d) {
     return `<rect class="${cls}" x="${nd.x}" y="${nd.y}" width="${nw}" height="${NH}" rx="6"/>${name}${sub}`;
   });
 
-  return `<div class="dg-wrap" tabindex="0" role="group" aria-label="${esc(d.title)} 架构图,可横向滚动">
+  return `<div class="dg-wrap" tabindex="0" role="group" aria-label="${esc(d.title)} ${esc(text.diagram)}">
 <svg class="dg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="${d.slug}-title ${d.slug}-desc">
-<title id="${d.slug}-title">${esc(d.title)} 架构</title>
+<title id="${d.slug}-title">${esc(d.title)} ${esc(text.architecture)}</title>
 <desc id="${d.slug}-desc">${esc(d.line)}</desc>
 <defs><marker id="${id}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="dg-head" points="0 0, 8 3, 0 6"/></marker></defs>
 ${paths.join('\n')}
@@ -555,12 +557,9 @@ ${boxes.join('\n')}
 
 // ---------------------------------------------------------------- page
 
-// A portfolio is edited for readers; the full board remains a secondary index.
-// Sources and the reasoning for this selection are in research/portfolio-references.md.
 const hidden = ['cbrs', 'a-share', 'h-level', 'applications', 'job-survey'];
 const all = groups.flatMap((g) => g.projects).filter((p) => !hidden.includes(p.slug));
 const bySlug = new Map(all.map((p) => [p.slug, p]));
-
 const herdeo = {
   slug: 'herdeo', title: 'Herdeo', repo: `${GH}/Herdeo`,
   line: '把 Herdr 里的原生 coding agent 会话接到 Paseo，在电脑和手机上继续同一段工作。',
@@ -572,173 +571,107 @@ const herdeo = {
   ],
   edges: ['cli>bridge', 'bridge>daemon', 'daemon>client'],
 };
-
 const selected = [
-  {
-    project: bySlug.get('agent-pm'), type: 'Agent workflow', status: '个人使用中',
-    description: '为多台机器上的 Claude Code 和 Codex 会话做的项目看板。',
-    result: '按项目查看进度、决策和待处理的问题，也能追溯到原始会话。',
-    detail: '每台机器的采集器只读本地会话，再推送到中心。中心用 SQLite 保存记录，同时提供网页和 MCP 接口。采集游标在收到确认后才前进，断线后可以续传。',
-    stack: ['TypeScript', 'SQLite', 'MCP'],
-  },
-  {
-    project: bySlug.get('noteweaver'), type: 'Personal knowledge', status: '开源',
-    description: '让 agent 帮忙整理知识，也让每条结论保留可以回头查的出处。',
-    result: '在原生 Obsidian 里管理知识页、断言和证据。同一套规则供日常编辑与离线校验使用。',
-    detail: '共享的 TypeScript 内核负责校验与变更计划，Obsidian 插件负责日常编辑，Agent 插件提供查询、写入、研究等技能。每个知识库自己定义 schema 和政策。结构校验与事实核查分别处理。',
-    stack: ['Obsidian', 'TypeScript', 'Agent skills'],
-  },
-  {
-    project: herdeo, type: 'Cross-device tooling', status: '开源',
-    description: '电脑前用原生终端，离开电脑后，手机也能接着处理同一个 agent 会话。',
-    result: '连接 Herdr 和 Paseo，同步消息、工具结果与支持的授权请求，保留原生 CLI 的交互。',
-    detail: 'Codex、Claude Code 和 Pi 使用各自的接入方式。桥接连接终端里已有的原生进程；手机和电脑操作的是同一个会话。当前远程输入支持纯文本，高级 CLI 操作仍在终端进行。',
-    stack: ['Node.js', 'Herdr', 'Paseo'],
-  },
+  { project: bySlug.get('agent-pm'), stack: ['TypeScript', 'SQLite', 'MCP'] },
+  { project: bySlug.get('noteweaver'), stack: ['Obsidian', 'TypeScript', 'Agent skills'] },
+  { project: herdeo, stack: ['Node.js', 'Herdr', 'Paseo'] },
 ];
-
-const explorations = [
-  {
-    slug: 'cangjie-skill', title: 'cangjie-skill', label: 'Fork / 评测',
-    description: '把书和长内容蒸馏成 skill。在 fork 里加入装与不装的对照评测，检查它是否真的改变了 agent 的表现。',
-    note: '增加 measure.py 实测门；评委先去掉作者与书名线索，再双向判分。',
-  },
-  {
-    slug: 'openlingo', title: 'openlingo', label: '产品原型',
-    description: '以识字为主线的中文学习产品：绘本、有声翻页，以及按已学汉字生成的故事。',
-    note: '故事用字由代码逐字校验。验证版已搭建，真实绘本的端到端流程仍待验证。',
-  },
-  {
-    slug: 'rsi-quant', title: 'rsi-quant', label: '研究 / 模拟盘',
-    description: '研究 ETF 轮动与杠杆择时，把策略生成、回测和样本外验证接成一条流水线。',
-    note: '自动研究与模拟盘在运行。回测候选需要经过 lockbox 验证；这里展示的是研究系统。',
-  },
-];
-
-// These notes are a dated snapshot, not a live activity feed.
-const notes = {
-  'open-evo-harness': '原生 harness 与网关用量统计；PR 已开，正在跑基线。',
-  'open-evo-pipeline': '并发评估与顺序提交的方案分析，尚未实现。',
-  'caibao-skill': '通用财报与银行财报的 skill 提取，仓库私有。',
-  'lewm-loopedwm': '基线实验结果已入库，等待宿主选型。',
-  'dllm-eval': '评测与负载分析框架的设计阶段。',
-  cannbench: 'Converter 修复已推送，NPU 验证待实机完成。',
-  'dllm-deck': 'dLLM 负载分析的 47 页本地演示文稿。',
-  'dgx-spark': '设备已接入，升级后的重启问题仍在排查。',
-  'family-os': '家庭数据与账户的只读连接器，仍在补齐数据来源。',
-  'flavor-spark': '数据导入脚本已编写，尚未执行。',
-  boilerplate: '完成一轮调研，目标用户与技术栈尚未确定。',
-  'whisper-srt': '音频转字幕工具，已用于引用核对。',
-  'trading-agents': '目标价缺失问题的修复，尚未提交。',
-  nvo: '公司研究笔记，暂缓结论，补充行业知识。',
-  atz: '财报阅读与估值笔记，尚未完成验证。',
-  'rblx-peng': '财报与估值复核，仍待补充反面证据。',
-};
-
-const arrow = '<span aria-hidden="true">↗</span>';
-const sourceLink = (p, label = '源码') => p.repo
-  ? `<a class="source-link" href="${esc(p.repo)}" rel="noopener" aria-label="${esc(p.title || p.name)} ${label}">${label} ${arrow}</a>`
-  : '';
-
-const architecture = (p, note) => `<details class="implementation">
-<summary>实现细节 <span class="expand" aria-hidden="true"></span></summary>
-<div class="implementation__body">
-${note ? `<p>${esc(note)}</p>` : ''}
-<figure class="architecture">
-${renderDiagram(p)}
-<figcaption>架构概览<span class="scroll-hint"> · 可横向查看</span></figcaption>
-</figure>
-</div>
-</details>`;
-
-const feature = ({ project: p, type, status, description, result, detail, stack }, i) => `<li class="work" id="${p.slug}">
-<div class="work__top"><span class="work__number">0${i + 1}</span><span>${esc(type)}</span><span class="work__status">${esc(status)}</span></div>
-<div class="work__heading"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>${sourceLink(p)}</div>
-<p class="work__intro">${esc(description)}</p>
-<p class="work__description">${esc(result)}</p>
-<ul class="stack" aria-label="${esc(p.title)} 技术与工具">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-${architecture(p, detail)}
-</li>`;
-
-const exploring = (entry) => {
-  const p = bySlug.get(entry.slug);
-  return `<li class="experiment" id="${entry.slug}">
-<div class="experiment__heading"><h3>${esc(entry.title)}</h3><span class="project-kind">${esc(entry.label)}</span>${sourceLink(p)}</div>
-<p>${esc(entry.description)}</p>
-${architecture(p, entry.note)}
-</li>`;
-};
-
+const exploringSlugs = ['cangjie-skill', 'openlingo', 'rsi-quant'];
 const featuredSlugs = selected.map((x) => x.project.slug);
-const exploringSlugs = explorations.map((x) => x.slug);
 const archiveGroups = groups.map((g) => ({
   ...g, projects: g.projects.filter((p) => !hidden.includes(p.slug) && !featuredSlugs.includes(p.slug) && !exploringSlugs.includes(p.slug)),
 })).filter((g) => g.projects.length);
 const openSource = others.filter((p) => p.name !== 'Herdeo');
+const arrow = '<span aria-hidden="true">↗</span>';
 
-const archive = archiveGroups.map((g) => `<div class="archive-group" id="${g.id}">
-<h3>${esc(g.name)}</h3>
-<ul>${g.projects.map((p) => {
-  if (!notes[p.slug]) throw new Error(`Missing portfolio note: ${p.slug}`);
-  return `<li id="${p.slug}" class="archive-item">
-<div class="archive-item__heading"><h4>${esc(p.title)}</h4>${sourceLink(p)}</div>
-<p>${esc(notes[p.slug])}</p>
-${architecture(p)}
-</li>`;
-}).join('\n')}</ul>
-</div>`).join('\n');
-
-const html = `<!doctype html>
-<html lang="zh-CN">
+function buildPage(lang) {
+  const text = copy[lang];
+  const sourceLink = (p) => p.repo
+    ? `<a class="source-link" href="${esc(p.repo)}" rel="noopener" aria-label="${esc(p.title || p.name)} ${esc(text.source)}">${text.source} ${arrow}</a>` : '';
+  const project = (p) => {
+    if (lang === 'zh') return p;
+    const translated = englishDiagrams[p.slug];
+    if (!translated || translated.cols.length !== p.cols.length) throw new Error(`Missing English diagram: ${p.slug}`);
+    const description = text.selectedCopy[p.slug]?.description || text.exploring[p.slug]?.description || text.archiveNotes[p.slug];
+    if (!description) throw new Error(`Missing English description: ${p.slug}`);
+    return { ...p, title: translated.title, line: description,
+      cols: p.cols.map((col, ci) => {
+        if (col.length !== translated.cols[ci].length) throw new Error(`Diagram translation shape mismatch: ${p.slug}`);
+        return col.map((node, ni) => {
+          const [n, s] = translated.cols[ci][ni].split('|');
+          return { ...node, n, s };
+        });
+      }),
+    };
+  };
+  const architecture = (p, note) => `<details class="implementation">
+<summary>${text.details} <span class="expand" aria-hidden="true"></span></summary>
+<div class="implementation__body">${note ? `<p>${esc(note)}</p>` : ''}
+<figure class="architecture">${renderDiagram(p, text)}
+<figcaption>${text.architecture}<span class="scroll-hint"> · ${text.scroll}</span></figcaption></figure>
+</div></details>`;
+  const feature = ({ project: original, stack }, i) => {
+    const p = project(original), c = text.selectedCopy[p.slug];
+    return `<li class="work" id="${p.slug}">
+<div class="work__top"><span class="work__number">0${i + 1}</span><span>${esc(c.type)}</span><span class="work__status">${esc(c.status)}</span></div>
+<div class="work__heading"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>${sourceLink(p)}</div>
+<p class="work__intro">${esc(c.description)}</p><p class="work__description">${esc(c.result)}</p>
+<ul class="stack" aria-label="${esc(p.title)} ${esc(text.tools)}">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+${architecture(p, c.detail)}</li>`;
+  };
+  const exploring = (slug) => {
+    const p = project(bySlug.get(slug)), c = text.exploring[slug];
+    return `<li class="experiment" id="${slug}">
+<div class="experiment__heading"><h3>${esc(p.title)}</h3><span class="project-kind">${esc(c.label)}</span>${sourceLink(p)}</div>
+<p>${esc(c.description)}</p>${architecture(p, c.note)}</li>`;
+  };
+  const archive = archiveGroups.map((g) => `<div class="archive-group" id="${g.id}">
+<h3>${esc(text.groupNames[g.id])}</h3><ul>${g.projects.map((original) => {
+    const p = project(original), note = text.archiveNotes[p.slug];
+    if (!note) throw new Error(`Missing ${lang} portfolio note: ${p.slug}`);
+    return `<li id="${p.slug}" class="archive-item"><div class="archive-item__heading"><h4>${esc(p.title)}</h4>${sourceLink(p)}</div><p>${esc(note)}</p>${architecture(p)}</li>`;
+  }).join('\n')}</ul></div>`).join('\n');
+  const label = (id, pair) => `<header class="section__label"><h2 id="${id}">${esc(pair[0])}</h2><p>${esc(pair[1])}</p></header>`;
+  const contacts = `<a href="mailto:${identity.email}">${text.email} ${arrow}</a><a href="${identity.linkedin}" rel="noopener">LinkedIn ${arrow}</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a>`;
+  const html = `<!doctype html>
+<html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<title>Yiju Zhao — Builder</title>
-<meta name="description" content="Yiju Zhao 的个人作品集。AI agent 工具、个人知识库，以及一些日常会用的软件。">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light">
+<title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
+<link rel="alternate" hreflang="en" href="index.html"><link rel="alternate" hreflang="zh-CN" href="zh.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<a class="skip" href="#main">跳到正文</a>
-<div class="page">
-<header class="nav" id="top">
-<a class="wordmark" href="#top" aria-label="Yiju Zhao，回到顶部">yiju<span aria-hidden="true">.</span></a>
-<nav aria-label="主导航"><a href="#building">作品</a><a href="#about">关于</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a></nav>
-</header>
-<main id="main">
-<section class="intro" aria-labelledby="name">
-<p class="eyebrow">Builder</p>
-<h1 id="name">Yiju Zhao<span aria-hidden="true">.</span></h1>
-<p class="intro__description">做 AI agent 工具，也做一些日常会用的软件。</p>
-</section>
-<section class="section" id="building" aria-labelledby="work-h">
-<header class="section__label"><h2 id="work-h">作品</h2><p>Selected work</p></header>
-<ol class="works">${selected.map(feature).join('\n')}</ol>
-</section>
-<section class="section" id="rest" aria-labelledby="exploring-h">
-<header class="section__label"><h2 id="exploring-h">实验与研究</h2><p>In progress</p></header>
-<ul class="experiments">${explorations.map(exploring).join('\n')}</ul>
-</section>
-<section class="section" id="others" aria-labelledby="index-h">
-<header class="section__label"><h2 id="index-h">其他项目</h2><p>Project index</p></header>
-<div class="project-index">
-<ul class="repo-list">${openSource.map((p) => `<li><a class="repo" href="${esc(p.repo)}" rel="noopener"><h3>${esc(p.name)}</h3><p>${esc(p.line)}</p><span class="repo__arrow" aria-hidden="true">↗</span></a>${p.live ? `<a class="live-link" href="${esc(p.live)}" rel="noopener">打开网站 ${arrow}</a>` : ''}</li>`).join('\n')}</ul>
-<details class="archive" id="archive"><summary><span>更多实验与项目记录</span><span class="expand" aria-hidden="true"></span></summary>
-<div class="archive__body"><p class="archive__note">截至 <time datetime="${UPDATED}">${UPDATED}</time> 的记录，包含设计中、验证中和暂缓的项目。</p>${archive}</div>
-</details>
-</div>
-</section>
-<section class="section about" id="about" aria-labelledby="about-h">
-<header class="section__label"><h2 id="about-h">关于我</h2><p>A little about me</p></header>
-<div class="about__body"><p>我是 Yiju。我用 Claude Code 和 Codex 做项目，兴趣从 agent 工具延伸到知识管理、中文学习和量化研究。很多项目的第一个用户是我自己。</p><p>代码和项目进展放在 <a href="${GH}" rel="noopener">GitHub ${arrow}</a>。欢迎交流。</p></div>
-</section>
-</main>
-<footer class="footer"><a href="#top">Yiju Zhao</a><span>更新于 <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer>
-</div>
-</body>
-</html>
-`;
+<body><a class="skip" href="#main">${text.skip}</a>
+<div class="page"><header class="nav" id="top">
+<a class="wordmark" href="#top" aria-label="${esc(text.home)}">yiju<span aria-hidden="true">.</span></a>
+<nav aria-label="${text.nav}"><a href="#building">${text.work}</a><a href="#about">${text.about}</a><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></nav>
+</header><main id="main">
+<section class="intro" aria-labelledby="name"><p class="eyebrow">${text.role}</p>
+<h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1>
+<p class="intro__identity">${identity.professionalName} <span aria-hidden="true">·</span> ${text.location}</p>
+<p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p>
+<div class="contact-links" aria-label="${text.email}">${contacts}</div></section>
+<section class="section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}
+<div class="background"><ol class="experience">${text.experience.map((entry) => `<li><p class="experience__dates">${esc(entry.dates)}</p><div class="experience__heading"><h3>${esc(entry.organization)}</h3><span>${esc(entry.role)}</span></div><p class="experience__description">${esc(entry.text)}</p></li>`).join('\n')}</ol>
+<div class="education"><h3>${text.education}</h3><ul>${text.degrees.map((d) => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
+<section class="section" id="building" aria-labelledby="work-h">${label('work-h', text.selected)}<ol class="works">${selected.map(feature).join('\n')}</ol></section>
+<section class="section" id="interests" aria-labelledby="interests-h">${label('interests-h', text.interests)}
+<ul class="interests">${text.focus.map((f) => `<li><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map((l) => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</li>`).join('\n')}</ul></section>
+<section class="section" id="rest" aria-labelledby="exploring-h">${label('exploring-h', text.experiments)}<ul class="experiments">${exploringSlugs.map(exploring).join('\n')}</ul></section>
+<section class="section" id="others" aria-labelledby="index-h">${label('index-h', text.index)}<div class="project-index">
+<ul class="repo-list">${openSource.map((p) => {
+    const description = text.repoDescriptions[p.name];
+    if (!description) throw new Error(`Missing ${lang} repo description: ${p.name}`);
+    return `<li><a class="repo" href="${esc(p.repo)}" rel="noopener"><h3>${esc(p.name)}</h3><p>${esc(description)}</p><span class="repo__arrow" aria-hidden="true">↗</span></a>${p.live ? `<a class="live-link" href="${esc(p.live)}" rel="noopener">${text.live} ${arrow}</a>` : ''}</li>`;
+  }).join('\n')}</ul>
+<details class="archive" id="archive"><summary><span>${text.archive}</span><span class="expand" aria-hidden="true"></span></summary><div class="archive__body"><p class="archive__note">${text.archiveNote}</p>${archive}</div></details></div></section>
+<section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}
+<div class="about__body">${text.aboutParagraphs.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div></div></section>
+</main><footer class="footer"><a href="#top">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>
+</body></html>`;
+  const filename = lang === 'en' ? 'index.html' : 'zh.html';
+  writeFileSync(new URL(filename, import.meta.url), html);
+  console.log(`${filename}: career background, 4 interests, ${selected.length} selected works, ${exploringSlugs.length} experiments`);
+}
 
-writeFileSync(new URL('./index.html', import.meta.url), html);
-console.log(`index.html: ${selected.length} selected, ${explorations.length} explorations, ${openSource.length} other repos, ${archiveGroups.reduce((n, g) => n + g.projects.length, 0)} archived records`);
+for (const lang of ['en', 'zh']) buildPage(lang);
