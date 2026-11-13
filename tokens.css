@@ -1,20 +1,24 @@
-/* Warm paper, ink, and a single botanical accent. */
+/* Claude / Anthropic-inspired palette.
+ * Reference: anthropics/skills, skills/brand-guidelines/SKILL.md.
+ * Brand orange is decorative; the deeper light-theme accent keeps small text readable.
+ */
 :root {
   color-scheme: light;
-  --color-paper: #f7f7f2;
-  --color-paper-2: #edeee7;
-  --color-card: #fdfdf9;
-  --color-ink: #202d26;
-  --color-ink-2: #536157;
-  --color-muted: #69756c;
-  --color-rule: #dce1d6;
-  --color-rule-2: #bcc7b6;
-  --color-accent: #386548;
-  --color-accent-wash: #e1ebd7;
-  --color-focus: #386548;
-  --color-stage: #e9eddf;
-  --color-dark: #23372c;
-  --color-dark-ink: #f1f5e9;
+  --color-paper: #faf9f5;
+  --color-paper-2: #f0eee6;
+  --color-card: #fffefa;
+  --color-ink: #141413;
+  --color-ink-2: #5e5b54;
+  --color-muted: #6d6a63;
+  --color-rule: #e8e6dc;
+  --color-rule-2: #c9c5b9;
+  --color-brand: #d97757;
+  --color-accent: #a6533b;
+  --color-accent-wash: #f4e5dc;
+  --color-focus: #a6533b;
+  --color-stage: #f0eee6;
+  --color-dark: #d97757;
+  --color-dark-ink: #141413;
   --font-cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei";
   --font-display: "Helvetica Neue", Helvetica, Arial, var(--font-cjk), sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", var(--font-cjk), sans-serif;
@@ -23,18 +27,18 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-paper: #141c17;
-  --color-paper-2: #202a23;
-  --color-card: #19231d;
-  --color-ink: #e5ebdf;
-  --color-ink-2: #b5c1b3;
-  --color-muted: #a0b09e;
-  --color-rule: #334238;
-  --color-rule-2: #566b56;
-  --color-accent: #bad5a4;
-  --color-accent-wash: #31462f;
-  --color-focus: #bad5a4;
-  --color-stage: #253428;
-  --color-dark: #2d4433;
-  --color-dark-ink: #f1f5e9;
+  --color-paper: #1f1e1d;
+  --color-paper-2: #2e2c29;
+  --color-card: #262624;
+  --color-ink: #faf9f5;
+  --color-ink-2: #d4d0c5;
+  --color-muted: #b0aea5;
+  --color-rule: #3d3a35;
+  --color-rule-2: #625d54;
+  --color-accent: #d97757;
+  --color-accent-wash: #483027;
+  --color-focus: #d97757;
+  --color-stage: #2c2926;
+  --color-dark: #d97757;
+  --color-dark-ink: #141413;
 }
