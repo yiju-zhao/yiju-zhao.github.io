@@ -1,6 +1,6 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-padding-top: 100px; -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--color-paper); color: var(--color-ink); font: 400 15px/1.75 var(--font-body); -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--color-paper); color: var(--color-ink); font: 400 16px/1.7 var(--font-body); -webkit-font-smoothing: antialiased; }
 h1, h2, h3, h4, p, ol, ul, figure { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; }

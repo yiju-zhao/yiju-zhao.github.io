@@ -1,13 +1,13 @@
 import { knowledgeRecords } from './lib/public-profile.mjs';
 import { lookup } from './lib/retrieval.mjs';
 import { ui } from './experience-ui.mjs';
+import './motion.mjs';
 
 const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en';
 const text = ui[lang], records = knowledgeRecords(lang);
 const dialog = document.querySelector('#portfolio-assistant');
 const input = document.querySelector('#assistant-question');
 const result = document.querySelector('#assistant-result');
-const modeLabels = document.querySelectorAll('[data-assistant-mode]');
 const form = document.querySelector('#assistant-form');
 const submit = form.querySelector('button[type="submit"]');
 let endpoint = '', connected = false, busy = false;
@@ -98,7 +98,6 @@ try {
       endpoint = url.href.replace(/\/$/, '');
       const health = await fetch(`${endpoint}/health`, { credentials: 'omit', signal: AbortSignal.timeout(3500) });
       const state = await health.json(); connected = health.ok && state.ready === true;
-      if (connected) for (const label of modeLabels) label.textContent = state.model?.startsWith('claude-haiku') ? text.aiMode : `${state.model || 'Claude'} · public profile`;
     }
   }
 } catch { /* Source lookup is immediately usable even without a server. */ }

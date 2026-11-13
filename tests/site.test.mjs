@@ -33,7 +33,7 @@ test('bilingual pages keep complete project graphs and labeled source lookup', (
     assert.ok(html.includes(`<html lang="${lang}">`));
     assert.equal([...html.matchAll(/<svg class="dg"/g)].length, 22);
     assert.ok(html.includes('id="portfolio-assistant"')); assert.ok(html.includes('type="module" src="app.mjs"'));
-    assert.ok(html.includes('data-assistant-mode')); assert.ok(html.includes('<noscript>'));
+    assert.ok(html.includes('<noscript>'));
     for (const hidden of ['cbrs', 'a-share', 'h-level', 'applications', 'job-survey']) assert.ok(!ids(file).includes(hidden));
   }
   const englishBody = read('index.html').split('<body>')[1];

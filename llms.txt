@@ -16,4 +16,4 @@
 - [LinkedIn](https://linkedin.com/in/eason-zhao): professional identity
 - [Open Evo](https://github.com/CARI-DAAL/open-evo): main contributor; current evaluation is ongoing
 
-Updated: 2026-11-12. RSI is an ongoing research direction.
+Updated: 2026-11-13. RSI is an ongoing research direction.

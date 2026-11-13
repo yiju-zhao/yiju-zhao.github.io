@@ -8,7 +8,7 @@ Email: eason.zhao.work@outlook.com
 LinkedIn: https://linkedin.com/in/eason-zhao
 GitHub: https://github.com/yiju-zhao
 Portfolio: https://yiju-zhao.github.io/
-Updated: 2026-11-12
+Updated: 2026-11-13
 
 ## Experience
 
