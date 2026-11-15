@@ -1,4 +1,4 @@
-# Yiju Zhao (Eason Zhao)
+# Eason Zhao (Yiju Zhao)
 
 I work on agents that learn from environment feedback. My work spans LLM post-training, agentic RL, and training-free self-evolution. I also build tools I use every day.
 

@@ -18,10 +18,10 @@ test('local guide answers its own starting questions in both languages', () => {
   assert.ok(lookup('Where is he based?', knowledgeRecords()).some(r => r.id === 'identity'));
   assert.ok(lookup('Why should we hire him?', knowledgeRecords()).some(r => r.id === 'experience'));
   assert.ok(lookup('介绍一下自己', knowledgeRecords('zh')).some(r => r.id === 'identity'));
-  assert.ok(lookup('What does Yiju work on?', knowledgeRecords()).some(r => r.id === 'experience'));
+  assert.ok(lookup('What does Eason work on?', knowledgeRecords()).some(r => r.id === 'experience'));
   assert.ok(lookup('How does he approach RSI?', knowledgeRecords()).some(r => r.id === 'focus-0'));
   assert.ok(lookup('Which agent tools has he built?', knowledgeRecords()).some(r => ['agent-pm','noteweaver','herdeo'].includes(r.id)));
-  assert.ok(lookup('Yiju 目前在做什么？', knowledgeRecords('zh')).some(r => r.id === 'experience'));
+  assert.ok(lookup('Eason 目前在做什么？', knowledgeRecords('zh')).some(r => r.id === 'experience'));
   assert.ok(lookup('他怎样研究递归自我改进？', knowledgeRecords('zh')).some(r => r.id === 'focus-0'));
   assert.ok(lookup('他做过哪些 agent 工具？', knowledgeRecords('zh')).some(r => ['agent-pm','noteweaver','herdeo'].includes(r.id)));
 });

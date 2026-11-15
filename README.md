@@ -1,4 +1,4 @@
-# Yiju Zhao · research engineer & builder
+# Eason Zhao · research engineer & builder
 
 A bilingual portfolio with a source-backed Q&A interface and a readable public career profile. The main site remains static on GitHub Pages; optional Claude answers use an independent Cloudflare Worker.
 

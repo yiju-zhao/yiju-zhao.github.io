@@ -14,7 +14,7 @@ export async function verifyEndpoint(endpoint, fetchImpl = globalThis.fetch) {
   if (state.ready !== true) throw new Error('The Worker is missing its Anthropic secret or rate/budget bindings.');
   // One bounded, billable probe confirms that this is real Claude mode, not a
   // configured-but-invalid key silently falling back to source lookup.
-  const probe = await fetchImpl(`${endpoint}/ask`, { method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json' }, body: JSON.stringify({ question: 'What does Yiju work on?', language: 'en' }), signal: AbortSignal.timeout(22000) });
+  const probe = await fetchImpl(`${endpoint}/ask`, { method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json' }, body: JSON.stringify({ question: 'What does Eason work on?', language: 'en' }), signal: AbortSignal.timeout(22000) });
   const answer = await probe.json();
   if (!probe.ok || answer.mode !== 'claude' || !answer.sources?.length) throw new Error('Claude did not return a cited answer. Check the API key, provider access and request limits.');
   return { ...state, liveVerified: true };

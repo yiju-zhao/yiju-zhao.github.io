@@ -18,9 +18,11 @@ im = Image.new('RGB', (1200, 630), palette['--color-paper'])
 d = ImageDraw.Draw(im)
 ink, muted, accent, rule = [palette[k] for k in ['--color-ink', '--color-muted', '--color-accent', '--color-rule']]
 d.text((65, 52), 'RESEARCH / ENGINEERING / PRODUCTS', font=font('Arial.ttf', 16), fill=accent)
-d.text((60, 110), 'Yiju Zhao', font=font('Arial.ttf', 112), fill=ink)
-d.ellipse((577, 197, 591, 211), fill=palette['--color-brand'])
-d.text((65, 243), 'Eason Zhao  ·  Toronto, Canada', font=font('Arial.ttf', 20), fill=muted)
+name_font = font('Arial.ttf', 112)
+d.text((60, 110), 'Eason Zhao', font=name_font, fill=ink)
+x = 60 + d.textlength('Eason Zhao', font=name_font) + 8
+d.ellipse((x, 197, x + 14, 211), fill=palette['--color-brand'])
+d.text((65, 243), 'Toronto, Canada', font=font('Arial.ttf', 20), fill=muted)
 d.text((65, 312), 'Agents, research,', font=font('Georgia.ttf', 43), fill=ink)
 d.text((65, 365), 'and useful software.', font=font('Georgia.ttf', 43), fill=ink)
 for y, label, sub in [(150, 'RESEARCH', 'Post-training / RL'), (255, 'SYSTEMS', 'Agents / evaluation'), (360, 'PRODUCTS', 'Knowledge / workflows')]:
