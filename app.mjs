@@ -138,44 +138,123 @@ document.querySelector('[data-ask-form]')?.addEventListener('submit', event => {
   openAssistant(field.value.trim()); field.value = '';
 });
 
-// Selected work: tabs over one stage. Links to a project that is not showing bring it forward first.
-const works = document.querySelector('[data-works]');
-if (works) {
-  const tabs = [...works.querySelectorAll('[role="tab"]')];
-  const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
-  const replay = (panel, name) => { panel.classList.remove(name); void panel.offsetWidth; panel.classList.add(name); };
-  const activate = (index, focus = false) => {
-    const changed = !panels[index].classList.contains('is-active');
-    tabs.forEach((tab, i) => { tab.setAttribute('aria-selected', String(i === index)); tab.tabIndex = i === index ? 0 : -1; panels[i].classList.toggle('is-active', i === index); });
-    if (changed) { replay(panels[index], 'is-entering'); replay(panels[index], 'is-fresh'); }
-    if (focus) tabs[index].focus();
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const replay = (el, name) => { el.classList.remove(name); void el.offsetWidth; el.classList.add(name); };
+
+// The map: every world is a project. Landing on one opens it in the side panel; on wide
+// screens the map also turns its camera toward that world.
+const map = document.querySelector('[data-map]'), panel = document.querySelector('[data-worlds]');
+let landOnHash = () => {};
+if (map && panel) {
+  const planets = [...map.querySelectorAll('.planet')];
+  const articles = planets.map(p => document.getElementById(p.dataset.world));
+  const camera = map.querySelector('[data-camera]'), spin = map.querySelector('[data-spin]');
+  const system = map.closest('.system'), count = panel.querySelector('[data-world-count]');
+  const markers = [...map.querySelectorAll('.map__ring, .map__ring-label')];
+  const wide = matchMedia('(min-width: 861px)');
+  let current = -1;
+  const light = ring => { for (const m of markers) m.classList.toggle('is-lit', ring != null && m.dataset.ring === String(ring)); };
+  const aim = planet => {
+    const rect = map.getBoundingClientRect();
+    const visible = rect.bottom > 160 && rect.top < innerHeight - 160;
+    if (!planet || !wide.matches || !visible) { camera.style.transform = ''; system.classList.remove('is-focused'); return; }
+    // where the world sits now: its place on the map, turned by however far the map has spun
+    const turn = (parseFloat(getComputedStyle(spin).rotate) || 0) * Math.PI / 180;
+    const x0 = parseFloat(planet.style.getPropertyValue('--x')) / 100 - .5, y0 = parseFloat(planet.style.getPropertyValue('--y')) / 100 - .5;
+    const px = (.5 + x0 * Math.cos(turn) - y0 * Math.sin(turn)) * rect.width, py = (.5 + x0 * Math.sin(turn) + y0 * Math.cos(turn)) * rect.height;
+    const room = innerWidth - panel.offsetWidth - 24;
+    const tx = room / 2 - rect.left, ty = Math.min(Math.max(innerHeight / 2, rect.top + 120), rect.bottom - 120) - rect.top;
+    camera.style.transformOrigin = `${px}px ${py}px`;
+    camera.style.transform = `translate(${tx - px}px, ${ty - py}px) scale(1.35)`;
+    system.classList.add('is-focused');
   };
-  tabs.forEach((tab, i) => tab.addEventListener('click', () => activate(i)));
-  works.querySelector('[role="tablist"]').addEventListener('keydown', event => {
-    const i = tabs.indexOf(document.activeElement); if (i < 0) return;
-    const next = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
-    if (next === undefined) return;
-    event.preventDefault(); activate(next, true);
+  const open = (index, { focus = true } = {}) => {
+    const changed = index !== current;
+    current = index;
+    planets.forEach((p, i) => p.classList.toggle('is-current', i === index));
+    articles.forEach((a, i) => a.classList.toggle('is-open', i === index));
+    map.classList.add('has-current', 'is-paused');
+    if (changed) { replay(articles[index], 'is-entering'); replay(articles[index], 'is-fresh'); panel.scrollTop = 0; }
+    panel.classList.add('is-open');
+    count.textContent = `${String(index + 1).padStart(2, '0')} / ${planets.length}`;
+    light(planets[index].dataset.ring); aim(planets[index]);
+    if (focus) articles[index].querySelector('h3').focus({ preventScroll: true });
+  };
+  const close = ({ restore = true } = {}) => {
+    if (current < 0) return;
+    const back = planets[current];
+    current = -1;
+    panel.classList.remove('is-open'); map.classList.remove('has-current', 'is-paused');
+    for (const p of planets) p.classList.remove('is-current');
+    light(null); aim(null);
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    if (restore) back.focus({ preventScroll: true });
+  };
+  const indexOf = hash => { try { return planets.findIndex(p => `#${p.dataset.world}` === decodeURIComponent(hash)); } catch { return -1; } };
+  const go = (index, how = 'push') => { open(index); history[how === 'push' ? 'pushState' : 'replaceState'](null, '', `#${planets[index].dataset.world}`); };
+
+  map.addEventListener('click', event => {
+    const planet = event.target.closest('.planet');
+    if (!planet) { close({ restore: false }); return; }
+    event.preventDefault();
+    const index = planets.indexOf(planet);
+    if (index === current) close(); else go(index, current < 0 ? 'push' : 'replace');
   });
-  const reveal = hash => {
-    let target = null;
-    try { target = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null; } catch {}
-    const index = panels.findIndex(panel => target && panel.contains(target));
-    if (index < 0) return false;
-    activate(index); works.scrollIntoView({ block: 'start' });
-    return true;
-  };
+  for (const planet of planets) {
+    planet.addEventListener('pointerenter', () => light(planet.dataset.ring));
+    planet.addEventListener('pointerleave', () => light(current < 0 ? null : planets[current].dataset.ring));
+    planet.addEventListener('focus', () => light(planet.dataset.ring));
+    planet.addEventListener('blur', () => light(current < 0 ? null : planets[current].dataset.ring));
+  }
+  for (const button of panel.querySelectorAll('[data-step]')) button.addEventListener('click', () => go((current + Number(button.dataset.step) + planets.length) % planets.length, 'replace'));
+  panel.querySelector('[data-close-world]').addEventListener('click', () => close());
+  panel.addEventListener('keydown', event => {
+    if (event.target.closest('input, textarea, .dg-wrap')) return;
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+    if (step) { event.preventDefault(); go((current + step + planets.length) % planets.length, 'replace'); }
+  });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && current >= 0 && !document.querySelector('dialog[open]')) close(); });
+  document.addEventListener('pointerdown', event => {
+    if (current >= 0 && !panel.contains(event.target) && !map.contains(event.target) && !event.target.closest('dialog, .nav')) close({ restore: false });
+  });
+  // Links to a project anywhere on the page (research notes, answer sources) land on that world.
   document.addEventListener('click', event => {
     const link = event.target.closest?.('a[href^="#"]');
-    if (link && reveal(link.hash)) { event.preventDefault(); history.pushState(null, '', link.hash); }
+    if (!link || map.contains(link)) return;
+    const index = indexOf(link.hash);
+    if (index >= 0) { event.preventDefault(); go(index); }
   });
-  addEventListener('hashchange', () => reveal(location.hash));
-  reveal(location.hash);
-  if ('IntersectionObserver' in window) {
-    const seen = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { seen.disconnect(); replay(panels.find(p => p.classList.contains('is-active')), 'is-fresh'); } }, { threshold: .5 });
-    seen.observe(works);
-  }
+  addEventListener('hashchange', () => { const index = indexOf(location.hash); if (index >= 0) open(index); else close({ restore: false }); });
+  addEventListener('popstate', () => { const index = indexOf(location.hash); if (index >= 0) open(index); else close({ restore: false }); });
+  addEventListener('resize', () => { if (current >= 0) aim(planets[current]); });
+  landOnHash = () => { const index = indexOf(location.hash); if (index >= 0) open(index); };
 }
+
+// Arrival: people get the map; agents follow a plain link to llms.txt.
+window.portfolioReady = true;
+const arrival = document.querySelector('[data-arrival]'), page = document.querySelector('.page');
+if (document.documentElement.classList.contains('is-arriving') && arrival) {
+  page.inert = true;
+  const choices = [...arrival.querySelectorAll('.arrival__choice')], human = arrival.querySelector('[data-arrive]');
+  human.focus();
+  const land = () => {
+    const root = document.documentElement;
+    if (root.classList.contains('is-landing')) return;
+    page.inert = false;
+    if (reducedMotion) { root.classList.remove('is-arriving'); landOnHash(); return; }
+    root.classList.add('is-landing');
+    dispatchEvent(new Event('portfolio:land'));
+    setTimeout(() => { root.classList.remove('is-arriving'); landOnHash(); }, 560);
+    setTimeout(() => root.classList.remove('is-landing'), 2000);
+  };
+  human.addEventListener('click', land);
+  arrival.addEventListener('keydown', event => {
+    if (event.key === 'Escape') land();
+    if (event.key !== 'Tab') return;
+    const at = choices.indexOf(document.activeElement), next = event.shiftKey ? at - 1 : at + 1;
+    if (next < 0 || next >= choices.length) { event.preventDefault(); choices[(next + choices.length) % choices.length].focus(); }
+  });
+} else landOnHash();
 
 // Diagrams: point at a part to keep what feeds it and what it feeds, and quiet the rest.
 for (const svg of document.querySelectorAll('.dg')) {

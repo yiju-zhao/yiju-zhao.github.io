@@ -573,23 +573,59 @@ const herdeo = {
   ],
   edges: ['cli>bridge', 'bridge>daemon', 'daemon>client'],
 };
-const selected = [
-  { project: bySlug.get('agent-pm'), stack: ['TypeScript', 'SQLite', 'MCP'] },
-  { project: bySlug.get('noteweaver'), stack: ['Obsidian', 'TypeScript', 'Agent skills'] },
-  { project: herdeo, stack: ['Node.js', 'Herdr', 'Paseo'] },
-];
-const exploringSlugs = ['cangjie-skill', 'openlingo', 'rsi-quant'];
-const featuredSlugs = selected.map((x) => x.project.slug);
-const archiveGroups = groups.map((g) => ({
-  ...g, projects: g.projects.filter((p) => !hidden.includes(p.slug) && !featuredSlugs.includes(p.slug) && !exploringSlugs.includes(p.slug)),
-})).filter((g) => g.projects.length);
-const openSource = others.filter((p) => p.name !== 'Herdeo');
+const stacks = { 'agent-pm': ['TypeScript', 'SQLite', 'MCP'], noteweaver: ['Obsidian', 'TypeScript', 'Agent skills'], herdeo: ['Node.js', 'Herdr', 'Paseo'] };
+const majors = ['agent-pm', 'noteweaver', 'herdeo', 'cangjie-skill', 'openlingo', 'rsi-quant'];
+const repoGroup = { 'herdr-lens': 'agent', 'billing-usage': 'agent', 'claude-token-meter': 'agent', deckpowers: 'agent', ConferenceFlow: 'product', 'DeepSight-Django': 'product', EchoPersona: 'product' };
+const RING = { 验证: 1, 构建: 2, 探索: 3 };
 const arrow = '<span aria-hidden="true">↗</span>';
+
+// The map. Every public project and repository is a world. Its angle is the area of
+// work (one sector per area, sized by how many worlds it holds); its distance from the
+// centre is how far along it is: public, validating, building, exploring.
+const worlds = [];
+for (const g of groups) {
+  for (const p of g.projects) {
+    if (hidden.includes(p.slug)) continue;
+    if (RING[p.stage] === undefined) throw new Error(`Unknown stage for ${p.slug}: ${p.stage}`);
+    worlds.push({ slug: p.slug, group: g.id, ring: RING[p.stage], project: p });
+  }
+  if (g.id === 'agent') worlds.push({ slug: 'herdeo', group: 'agent', ring: 0, project: herdeo });
+  for (const o of others) if (repoGroup[o.name] === g.id) worlds.push({ slug: o.name.toLowerCase(), group: g.id, ring: 0, repo: o });
+}
+for (const o of others) if (o.name !== 'Herdeo' && !repoGroup[o.name]) throw new Error(`No area for repository ${o.name}`);
+worlds.sort((a, b) => groups.findIndex((g) => g.id === a.group) - groups.findIndex((g) => g.id === b.group) || a.ring - b.ring);
+
+const RADII = [0.31, 0.48, 0.65, 0.82]; // share of the map's half-width
+const SECTOR_GAP = 10, LABEL_GAP = 34; // degrees between areas; the wider gap at the top holds the ring names
+const polar = (deg, r) => [50 + 50 * r * Math.cos(deg * Math.PI / 180), 50 + 50 * r * Math.sin(deg * Math.PI / 180)];
+const sectors = [];
+{
+  const areas = [...new Set(worlds.map((w) => w.group))];
+  const usable = 360 - LABEL_GAP - SECTOR_GAP * (areas.length - 1);
+  let start = -90 + LABEL_GAP / 2;
+  for (const id of areas) {
+    const members = worlds.filter((w) => w.group === id), span = usable * members.length / worlds.length;
+    sectors.push({ id, start, span, mid: start + span / 2 });
+    RADII.forEach((r, k) => {
+      const cell = members.filter((w) => w.ring === k);
+      cell.forEach((w, i) => {
+        // neighbouring rings are offset a little so worlds do not line up along a radius
+        const t = (i + 0.5 + (cell.length > 1 ? (k % 2 ? 0.16 : -0.16) : 0)) / cell.length;
+        w.angle = start + span * t;
+        [w.x, w.y] = polar(w.angle, r);
+      });
+    });
+    start += span + SECTOR_GAP;
+  }
+  for (const a of worlds) for (const b of worlds) {
+    if (a === b) continue;
+    if (Math.hypot(a.x - b.x, a.y - b.y) < 4.6) throw new Error(`Worlds too close on the map: ${a.slug} and ${b.slug}`);
+  }
+}
+const pct = (n) => `${n.toFixed(2)}%`;
 
 function buildPage(lang) {
   const text = copy[lang], u = ui[lang];
-  const sourceLink = (p) => p.repo
-    ? `<a class="source-link" href="${esc(p.repo)}" rel="noopener" aria-label="${esc(p.title || p.name)} ${esc(text.source)}">${text.source} ${arrow}</a>` : '';
   const project = (p) => {
     if (lang === 'zh') return p;
     const translated = englishDiagrams[p.slug];
@@ -606,69 +642,81 @@ function buildPage(lang) {
       }),
     };
   };
-  const architecture = (p, note) => `<details class="implementation">
-<summary>${text.details} <span class="expand" aria-hidden="true"></span></summary>
-<div class="implementation__body">${note ? `<p>${esc(note)}</p>` : ''}
-<figure class="architecture">${renderDiagram(p, text)}
-<figcaption class="scroll-hint">${text.scroll}</figcaption></figure>
-</div></details>`;
-  const feature = ({ project: original, stack }, i) => {
-    const p = project(original), c = text.selectedCopy[p.slug];
-    return `<article class="work${i ? '' : ' is-active'}" id="${p.slug}" role="tabpanel" aria-labelledby="tab-${p.slug}">
-<div class="work__text"><div class="work__lede"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>
-<p class="work__intro">${esc(c.description)}</p>
-<p class="work__meta"><span>${esc(c.status)}</span>${sourceLink(p)}</p></div>
-<div class="work__more"><p class="work__description">${esc(c.result)}</p>
-<ul class="stack" aria-label="${esc(p.title)} ${esc(text.tools)}">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-<details class="implementation"><summary>${text.details}<span class="expand" aria-hidden="true"></span></summary><div class="implementation__body"><p>${esc(c.detail)}</p></div></details></div></div>
-<figure class="work__visual">${renderDiagram(p, text)}<figcaption data-trace-note data-default="${esc(u.traceHint)}">${esc(u.traceHint)}</figcaption></figure></article>`;
+  // What each world says when you land on it, in this language.
+  const describe = (w) => {
+    if (w.repo) {
+      const lede = text.repoDescriptions[w.repo.name];
+      if (!lede) throw new Error(`Missing ${lang} repo description: ${w.repo.name}`);
+      return { title: w.repo.name, lede, repo: w.repo.repo, live: w.repo.live };
+    }
+    const p = project(w.project), selected = text.selectedCopy[w.slug], exploring = text.exploring[w.slug];
+    if (selected) return { title: p.title, kind: selected.type, lede: selected.description, body: selected.result, detail: selected.detail, repo: p.repo, p };
+    if (exploring) return { title: p.title, kind: exploring.label, lede: exploring.description, body: exploring.note, repo: p.repo, p };
+    const note = text.archiveNotes[w.slug];
+    if (!note) throw new Error(`Missing ${lang} portfolio note: ${w.slug}`);
+    return lang === 'zh' ? { title: p.title, lede: p.line, body: note, repo: p.repo, p } : { title: p.title, lede: note, repo: p.repo, p };
   };
-  const rail = `<div class="works__rail" role="tablist" aria-label="${esc(text.selected[0])}">${selected.map(({ project: original }, i) => {
-    const p = project(original), c = text.selectedCopy[p.slug];
-    return `<button class="works__tab" type="button" role="tab" id="tab-${p.slug}" aria-controls="${p.slug}" aria-selected="${!i}" tabindex="${i ? -1 : 0}"><span class="works__tab-name">${esc(p.title)}</span><span class="works__tab-kind">${esc(c.type)}</span></button>`;
-  }).join('')}</div>`;
-  const exploring = (slug) => {
-    const p = project(bySlug.get(slug)), c = text.exploring[slug];
-    return `<li class="experiment" id="${slug}">
-<div class="experiment__heading"><h3>${esc(p.title)}</h3><span class="project-kind">${esc(c.label)}</span>${sourceLink(p)}</div>
-<p>${esc(c.description)}</p>${architecture(p, c.note)}</li>`;
+  const told = new Map(worlds.map((w) => [w.slug, describe(w)]));
+  const where = (w) => `${text.groupNames[w.group]} · ${u.stages[w.ring]}`;
+
+  const planet = (w) => {
+    const d = told.get(w.slug);
+    const cls = `planet${majors.includes(w.slug) ? ' planet--major' : ''}${d.repo ? ' planet--ringed' : ''}`;
+    return `<a class="${cls}" href="#${w.slug}" data-world="${w.slug}" data-ring="${w.ring}" style="--x:${pct(w.x)};--y:${pct(w.y)};--ring:${w.ring}" aria-label="${esc(d.title)}, ${esc(where(w))}"><span class="planet__body"><span class="planet__ball"></span><span class="planet__label" aria-hidden="true">${esc(d.title)}</span></span></a>`;
   };
-  const archive = archiveGroups.map((g) => `<div class="archive-group" id="${g.id}">
-<h3>${esc(text.groupNames[g.id])}</h3><ul>${g.projects.map((original) => {
-    const p = project(original), note = text.archiveNotes[p.slug];
-    if (!note) throw new Error(`Missing ${lang} portfolio note: ${p.slug}`);
-    return `<li id="${p.slug}" class="archive-item"><div class="archive-item__heading"><h4>${esc(p.title)}</h4>${sourceLink(p)}</div><p>${esc(note)}</p>${architecture(p)}</li>`;
-  }).join('\n')}</ul></div>`).join('\n');
+  const map = `<div class="map" data-map>
+<div class="map__camera" data-camera>
+<svg class="map__rings" viewBox="0 0 100 100" aria-hidden="true">${RADII.map((r, k) => `<circle class="map__ring" data-ring="${k}" cx="50" cy="50" r="${(r * 50).toFixed(2)}"/>`).join('')}</svg>
+<div class="map__spin" data-spin>
+${sectors.map((s) => { const [x, y] = polar(s.mid, 0.93); return `<span class="map__sector" style="--x:${pct(x)};--y:${pct(y)}" aria-hidden="true"><span>${esc(text.groupNames[s.id])}</span></span>`; }).join('\n')}
+${RADII.map((r, k) => `<span class="map__ring-label" data-ring="${k}" style="--x:50%;--y:${pct(50 - r * 50)}" aria-hidden="true"><span>${esc(u.stages[k])}</span></span>`).join('')}
+${worlds.map(planet).join('\n')}
+</div>
+<span class="map__sun" aria-hidden="true"></span>
+</div></div>`;
+
+  const world = (w) => {
+    const d = told.get(w.slug);
+    const links = [d.repo ? `<a href="${esc(d.repo)}" rel="noopener">${text.source} ${arrow}</a>` : '', d.live ? `<a href="${esc(d.live)}" rel="noopener">${text.live} ${arrow}</a>` : ''].join('');
+    return `<article class="world" id="${w.slug}" aria-labelledby="${w.slug}-h">
+<p class="world__where">${esc(where(w))}${d.kind ? ` · ${esc(d.kind)}` : ''}</p>
+<h3 id="${w.slug}-h" tabindex="-1">${esc(d.title)}</h3>
+<p class="world__lede">${esc(d.lede)}</p>${d.body ? `<p class="world__body">${esc(d.body)}</p>` : ''}${d.detail ? `<p class="world__body">${esc(d.detail)}</p>` : ''}${stacks[w.slug] ? `<ul class="stack" aria-label="${esc(d.title)} ${esc(text.tools)}">${stacks[w.slug].map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+${d.p ? `<figure class="world__diagram">${renderDiagram(d.p, text)}<figcaption data-trace-note data-default="${esc(u.traceHint)}">${esc(u.traceHint)}</figcaption></figure>` : ''}${links ? `<p class="world__links">${links}</p>` : ''}
+</article>`;
+  };
+
   const label = (id, pair) => `<header class="section__label"><h2 id="${id}">${esc(pair[0])}</h2>${pair[1] ? `<p>${esc(pair[1])}</p>` : ''}</header>`;
   const contacts = `<a href="mailto:${identity.email}">${text.email} ${arrow}</a><a href="${identity.linkedin}" rel="noopener">LinkedIn ${arrow}</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a>`;
   const questionButtons = u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}"><span>${esc(q)}</span><span aria-hidden="true">↗</span></button>`).join('');
+  // Decided before first paint: a fresh visit or a reload meets the arrival screen; moving
+  // between this site's own pages does not. If the script never loads, the screen lifts itself.
+  const head = `document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}try{var n=performance.getEntriesByType('navigation')[0],k=n?n.type:'navigate',o='';try{o=new URL(document.referrer).origin}catch(e){}if(k==='reload'||(k==='navigate'&&o!==location.origin)){document.documentElement.classList.add('is-arriving');setTimeout(function(){if(!window.portfolioReady)document.documentElement.classList.remove('is-arriving')},4000)}}catch(e){}`;
   const html = `<!doctype html>
 <html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
 <title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
-${metadata(lang)}<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
-<body><a class="skip" href="#main">${text.skip}</a>
+${metadata(lang)}<script>${head}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
+<body><div class="arrival" data-arrival role="dialog" aria-modal="true" aria-labelledby="arrival-h" aria-describedby="arrival-d"><div class="arrival__inner"><h2 id="arrival-h">${esc(u.arrivalTitle)}</h2><p id="arrival-d">${esc(u.arrivalText)}</p><div class="arrival__choices"><button class="arrival__choice" type="button" data-arrive><span class="arrival__who">${esc(u.arrivalHuman[0])}</span><span class="arrival__what">${esc(u.arrivalHuman[1])}</span></button><a class="arrival__choice" href="llms.txt"><span class="arrival__who">${esc(u.arrivalAgent[0])}</span><span class="arrival__what">${esc(u.arrivalAgent[1])}</span></a></div></div></div>
+<a class="skip" href="#main">${text.skip}</a>
 <div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">eason<span aria-hidden="true">.</span></a>
-<nav class="nav__sections" aria-label="${text.nav}"><a href="#building">${text.work}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
+<nav class="nav__sections" aria-label="${text.nav}"><a href="#map">${u.map}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
 <div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button><button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>
-<main id="main"><section class="intro" aria-labelledby="name"><div class="intro__text"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links" aria-label="${text.email}">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
-<aside class="hero-assistant" aria-labelledby="assistant-teaser-h"><div class="hero-assistant__body"><h2 id="assistant-teaser-h">${u.assistantTitle}</h2><p>${u.assistantDescription}</p><form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><div class="question-chips">${u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}">${esc(q)}</button>`).join('')}</div></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></aside></section>
-<section class="section" id="building" aria-labelledby="work-h">${label('work-h', [text.selected[0], u.workLead])}<div class="works" data-works>${rail}${selected.map(feature).join('\n')}</div></section>
-<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
-<section class="section" id="rest" aria-labelledby="exploring-h">${label('exploring-h', text.experiments)}<ul class="experiments">${exploringSlugs.map(exploring).join('\n')}</ul></section>
+<main id="main"><section class="system" id="map" aria-labelledby="name"><div class="system__text system__lead"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p></div>
+<div class="system__text system__more"><p class="intro__context">${text.context}</p>
+<form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><noscript><p class="system__noscript"><a href="profile.md">${u.profileMd} ↗</a></p></noscript>
+<div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
+<figure class="system__map" aria-label="${esc(u.mapLabel)}">${map}<figcaption class="map__caption"><span>${esc(u.mapLead)}</span><span class="map__hint">${esc(u.mapHint)}</span></figcaption></figure></section>
+<section class="worlds" id="worlds" data-worlds aria-labelledby="worlds-h"><div class="worlds__bar"><span class="worlds__count" data-world-count></span><button class="worlds__step" type="button" data-step="-1" aria-label="${esc(u.prev)}">←</button><button class="worlds__step" type="button" data-step="1" aria-label="${esc(u.next)}">→</button><button class="worlds__step" type="button" data-close-world aria-label="${esc(u.closeWorld)}">×</button></div><h2 class="worlds__title" id="worlds-h">${esc(u.worldsTitle)}</h2><div class="worlds__list">${worlds.map(world).join('\n')}</div></section>
+<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">→</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
 <section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
-<section class="section index-section" id="others" aria-labelledby="index-h">${label('index-h', [text.index[0]])}<div class="project-index"><ul class="repo-list">${openSource.map(p => {
-    const description = text.repoDescriptions[p.name];
-    if (!description) throw new Error(`Missing ${lang} repo description: ${p.name}`);
-    return `<li><a class="repo" href="${esc(p.repo)}" rel="noopener"><h3>${esc(p.name)}</h3><p>${esc(description)}</p><span class="repo__arrow" aria-hidden="true">↗</span></a>${p.live ? `<a class="live-link" href="${esc(p.live)}" rel="noopener">${text.live} ${arrow}</a>` : ''}</li>`;
-  }).join('\n')}</ul><details class="archive" id="archive"><summary><span>${text.archive}</span><span class="expand" aria-hidden="true"></span></summary><div class="archive__body"><p class="archive__note">${text.archiveNote}</p>${archive}</div></details></div></section>
 <section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}<div class="about__body">${text.aboutParagraphs.map(p => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div></div></section></main>
 <div class="agent-links"><span>${u.profileLinks}</span><a href="recruiters.html">${u.reader} ↗</a><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="#top">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>
 <dialog class="assistant-dialog" id="portfolio-assistant" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="assistant-dialog__inner"><header class="assistant-dialog__header"><div><h2 id="dialog-title">${u.dialogTitle}</h2><p class="assistant-dialog__intro" id="dialog-description">${u.dialogDescription}</p></div><button class="icon-button" data-close-assistant type="button" aria-label="${u.close}">×</button></header><div class="question-list">${questionButtons}</div><form class="assistant-form" id="assistant-form"><input id="assistant-question" name="question" type="text" minlength="2" maxlength="1200" required autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send} ↗</button></form><div id="assistant-result" class="assistant-result" aria-live="polite" aria-atomic="false">${u.empty}</div><footer class="assistant-dialog__footer"><button data-clear-answer type="button">${u.clear}</button><span>${u.privacy}</span></footer></div></dialog>
 </body></html>`;
   const filename = lang === 'en' ? 'index.html' : 'zh.html';
   writeFileSync(new URL(filename, import.meta.url), html);
-  console.log(`${filename}: career background, 4 interests, ${selected.length} selected works, ${exploringSlugs.length} experiments`);
+  console.log(`${filename}: ${worlds.length} worlds in ${sectors.length} areas, 4 interests`);
 }
 
 for (const lang of ['en', 'zh']) buildPage(lang);

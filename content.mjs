@@ -20,7 +20,7 @@ export const copy = {
     email: 'Email',
     background: ['Background', 'Research & engineering'], selected: ['Selected work', 'Tools I build'],
     interests: ['Research & products', 'Current interests'], experiments: ['Experiments', 'In progress'],
-    index: ['Other projects', 'Project index'], aboutLabel: ['A little about me', 'Research meets building'],
+    index: ['Other projects', 'Project index'], aboutLabel: ['About', 'One thread through all of it'],
     experience: [
       { dates: 'Sep 2024 – present', organization: 'Huawei · Toronto', role: 'Research Engineer', text: 'LLM post-training and agentic RL for code generation; training-free agent self-evolution, with evaluation and reward infrastructure.' },
       { dates: 'Sep 2018 – May 2024', organization: 'University of Waterloo', role: 'Research Assistant', text: 'Scientific machine learning for quantum materials, including band-structure prediction and physics-informed neural networks.' },
@@ -79,7 +79,7 @@ export const copy = {
     source: 'Code', tools: 'tools and technologies', live: 'Open website', archive: 'More experiments & project notes',
     archiveNote: 'Snapshot from 11 Nov 2026. Includes projects in design, validation and on hold.',
     aboutParagraphs: [
-      'I’m Eason. I’m a Toronto-based research engineer with a PhD in Electrical & Computer Engineering from Waterloo. I want to connect knowledge bases, benchmarks and agent self-evolution in a research loop, and work toward recursive self-improvement in scientific research.',
+      'Physics at Shanghai Jiao Tong, a PhD in Electrical & Computer Engineering at Waterloo, and now research engineering at Huawei in Toronto. The thread through all of it: connect knowledge bases, benchmarks and agent self-evolution into one research loop, and push that loop toward recursive self-improvement in science.',
       'I’m interested in research engineering, agent infrastructure and agent products. If that overlaps with your team or something you’re building, let’s talk.',
     ],
     updated: 'Updated',
@@ -95,7 +95,7 @@ export const copy = {
     email: '邮件联系',
     background: ['简短履历', 'Research & engineering'], selected: ['作品', 'Selected work'],
     interests: ['研究与产品兴趣', 'Current interests'], experiments: ['实验与研究', 'In progress'],
-    index: ['其他项目', 'Project index'], aboutLabel: ['关于我', 'A little about me'],
+    index: ['其他项目', 'Project index'], aboutLabel: ['关于', '贯穿其中的一条线'],
     experience: [
       { dates: '2024.09 – 至今', organization: '华为 · 多伦多', role: 'Research Engineer', text: '做代码生成 agent 的 LLM post-training 与 agentic RL；也在做 Triton kernel-generation agent 的免训练自演进，以及支撑它们的评测与 reward 系统。' },
       { dates: '2018.09 – 2024.05', organization: 'University of Waterloo', role: 'Research Assistant', text: '将机器学习用于量子材料研究，包括能带预测与物理信息神经网络（PINN）。' },
@@ -154,7 +154,7 @@ export const copy = {
     source: '源码', tools: '技术与工具', live: '打开网站', archive: '更多实验与项目记录',
     archiveNote: '截至 2026-11-11 的记录，包含设计中、验证中和暂缓的项目。',
     aboutParagraphs: [
-      '我是 Eason。现居多伦多，Waterloo ECE 博士。希望把知识库、benchmark 与 agent 自演进连接起来，逐步用于更广泛的科学研究，走向递归自我改进。',
+      '在上海交大读物理，在 Waterloo 读完 ECE 博士，现在在华为多伦多做研究工程。贯穿其中的是同一件事：把知识库、benchmark 与 agent 自演进连成一个研究闭环，再把这个闭环推向科学研究中的递归自我改进。',
       '我对 research engineering、agent 基础设施和 agent 产品的工作机会感兴趣。如果与你的团队或在做的东西有关，欢迎联系。',
     ],
     updated: '更新于',
