@@ -3,7 +3,7 @@
 // Keep unpublished research metrics, private job-search data and phone numbers
 // out of this public summary. RSI is a research direction, not a claimed result.
 export const identity = {
-  name: 'Eason Zhao', legalName: 'Yiju Zhao',
+  name: 'Eason Zhao',
   email: 'eason.zhao.work@outlook.com',
   linkedin: 'https://linkedin.com/in/eason-zhao',
 };
@@ -79,14 +79,14 @@ export const copy = {
     source: 'Code', tools: 'tools and technologies', live: 'Open website', archive: 'More experiments & project notes',
     archiveNote: 'Snapshot from 11 Nov 2026. Includes projects in design, validation and on hold.',
     aboutParagraphs: [
-      'I’m Eason, legal name Yiju. I’m a Toronto-based research engineer with a PhD in Electrical & Computer Engineering from Waterloo. I want to connect knowledge bases, benchmarks and agent self-evolution in a research loop, and work toward recursive self-improvement in scientific research.',
+      'I’m Eason. I’m a Toronto-based research engineer with a PhD in Electrical & Computer Engineering from Waterloo. I want to connect knowledge bases, benchmarks and agent self-evolution in a research loop, and work toward recursive self-improvement in scientific research.',
       'I’m interested in research engineering, agent infrastructure and agent products. If that overlaps with your team or something you’re building, let’s talk.',
     ],
     updated: 'Updated',
   },
   zh: {
     title: 'Eason Zhao | 研究工程师与 Builder',
-    meta: 'Eason Zhao，本名 Yiju Zhao。多伦多研究工程师与 builder，Waterloo ECE 博士。关注 LLM post-training、agentic RL、递归自我改进与 agent 产品。',
+    meta: 'Eason Zhao。多伦多研究工程师与 builder，Waterloo ECE 博士。关注 LLM post-training、agentic RL、递归自我改进与 agent 产品。',
     skip: '跳到正文', home: 'Eason Zhao，回到顶部', nav: '主导航',
     work: '作品', about: '关于', switchLabel: 'EN', switchPath: 'index.html', switchTitle: 'Switch to English',
     role: 'Research engineer & builder', location: '多伦多，加拿大',
@@ -154,7 +154,7 @@ export const copy = {
     source: '源码', tools: '技术与工具', live: '打开网站', archive: '更多实验与项目记录',
     archiveNote: '截至 2026-11-11 的记录，包含设计中、验证中和暂缓的项目。',
     aboutParagraphs: [
-      '我是 Eason，本名 Yiju。现居多伦多，Waterloo ECE 博士。希望把知识库、benchmark 与 agent 自演进连接起来，逐步用于更广泛的科学研究，走向递归自我改进。',
+      '我是 Eason。现居多伦多，Waterloo ECE 博士。希望把知识库、benchmark 与 agent 自演进连接起来，逐步用于更广泛的科学研究，走向递归自我改进。',
       '我对 research engineering、agent 基础设施和 agent 产品的工作机会感兴趣。如果与你的团队或在做的东西有关，欢迎联系。',
     ],
     updated: '更新于',

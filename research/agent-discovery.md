@@ -25,7 +25,7 @@
 
 ```json
 {
-  "name": "Yiju Zhao",
+  "name": "Eason Zhao",
   "url": "https://yiju-zhao.github.io/",
   "github": "https://github.com/yiju-zhao",
   "summary": "与页面可见简介一致",

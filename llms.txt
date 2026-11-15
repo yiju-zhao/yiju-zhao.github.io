@@ -1,4 +1,4 @@
-# Eason Zhao (Yiju Zhao)
+# Eason Zhao
 
 > Research engineer and builder in Toronto. LLM post-training, agentic RL, recursive self-improvement and agent products.
 

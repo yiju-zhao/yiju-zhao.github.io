@@ -3,9 +3,6 @@
   "updated": "2026-11-13",
   "url": "https://yiju-zhao.github.io/",
   "name": "Eason Zhao",
-  "alternate_names": [
-    "Yiju Zhao"
-  ],
   "location": "Toronto, Canada",
   "summary": "I work on agents that learn from environment feedback. My work spans LLM post-training, agentic RL, and training-free self-evolution. I also build tools I use every day.",
   "contact": {
