@@ -419,7 +419,7 @@ function textWidth(s, size, mono) {
     const c = ch.codePointAt(0);
     if (c > 0x2e7f) w += size;
     else if (ch === ' ') w += size * (mono ? 0.62 : 0.3);
-    else w += size * (mono ? 0.62 : 0.6);
+    else w += size * (mono ? 0.62 : 0.55);
   }
   return w;
 }
@@ -456,8 +456,8 @@ function renderDiagram(d, text) {
     const y0 = PAD_Y + ((R - col.length) * PITCH) / 2;
     col.forEach((nd, ri) => {
       if (nodes.has(nd.id)) fail(`duplicate node id ${nd.id}`);
-      if (textWidth(nd.n, 13, false) > nw - 16) fail(`name too wide: ${nd.n}`);
-      if (nd.s && textWidth(nd.s, nd.m ? 10 : 11, !!nd.m) > nw - 16) fail(`sublabel too wide: ${nd.s}`);
+      if (textWidth(nd.n, 14, false) > nw - 10) fail(`name too wide: ${nd.n}`);
+      if (nd.s && textWidth(nd.s, nd.m ? 11.5 : 12, !!nd.m) > nw - 10) fail(`sublabel too wide: ${nd.s}`);
       nodes.set(nd.id, { ...nd, ci, ri, x: PAD_X + ci * (nw + gap), y: y0 + ri * PITCH, out: [], in: [] });
     });
   });
@@ -535,7 +535,7 @@ function renderDiagram(d, text) {
       const s = e.y2 > e.y1 ? 1 : -1, r = Math.min(8, Math.abs(e.y2 - e.y1) / 2), m = e.lane;
       p = `M${e.x1},${e.y1} H${m - r} Q${m},${e.y1} ${m},${e.y1 + s * r} V${e.y2 - s * r} Q${m},${e.y2} ${m + r},${e.y2} H${e.x2}`;
     }
-    return `<path class="dg-edge${e.dashed ? ' dg-edge--dashed' : ''}" d="${p}" marker-end="url(#${id})"/>`;
+    return `<path class="dg-edge${e.dashed ? ' dg-edge--dashed' : ''}" data-from="${esc(e.from.id)}" data-to="${esc(e.to.id)}" d="${p}" marker-end="url(#${id})"/>`;
   });
 
   const boxes = [...nodes.values()].map((nd) => {
@@ -543,7 +543,7 @@ function renderDiagram(d, text) {
     const cls = `dg-node${nd.f ? ' dg-node--focal' : ''}${nd.p ? ' dg-node--pending' : ''}`;
     const name = `<text class="dg-name" x="${cx}" y="${nd.y + (nd.s ? 21 : 28)}" text-anchor="middle">${esc(nd.n)}</text>`;
     const sub = nd.s ? `<text class="dg-sub${nd.m ? ' dg-sub--mono' : ''}" x="${cx}" y="${nd.y + 37}" text-anchor="middle">${esc(nd.s)}</text>` : '';
-    return `<rect class="${cls}" x="${nd.x}" y="${nd.y}" width="${nw}" height="${NH}" rx="6"/>${name}${sub}`;
+    return `<g class="dg-box" data-node="${esc(nd.id)}"><rect class="${cls}" x="${nd.x}" y="${nd.y}" width="${nw}" height="${NH}" rx="6"/>${name}${sub}</g>`;
   });
 
   return `<div class="dg-wrap" tabindex="0" role="group" aria-label="${esc(d.title)} ${esc(text.diagram)}">
@@ -614,14 +614,19 @@ function buildPage(lang) {
 </div></details>`;
   const feature = ({ project: original, stack }, i) => {
     const p = project(original), c = text.selectedCopy[p.slug];
-    return `<li class="work" id="${p.slug}"><div class="work__text">
-<div class="work__top"><span>${esc(c.type)}</span><span class="work__status">${esc(c.status)}</span></div>
-<div class="work__heading"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>${sourceLink(p)}</div>
-<p class="work__intro">${esc(c.description)}</p><p class="work__description">${esc(c.result)}</p>
+    return `<article class="work${i ? '' : ' is-active'}" id="${p.slug}" role="tabpanel" aria-labelledby="tab-${p.slug}">
+<div class="work__text"><div class="work__lede"><h3><a href="${esc(p.repo)}" rel="noopener">${esc(p.title)}</a></h3>
+<p class="work__intro">${esc(c.description)}</p>
+<p class="work__meta"><span>${esc(c.status)}</span>${sourceLink(p)}</p></div>
+<div class="work__more"><p class="work__description">${esc(c.result)}</p>
 <ul class="stack" aria-label="${esc(p.title)} ${esc(text.tools)}">${stack.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-<details class="implementation"><summary>${text.details}<span class="expand" aria-hidden="true"></span></summary><div class="implementation__body"><p>${esc(c.detail)}</p></div></details></div>
-<figure class="work__visual" id="${p.slug}-visual">${renderDiagram(p, text)}<figcaption><span class="scroll-hint">${text.scroll}</span><button type="button" data-expand-work aria-expanded="false" aria-controls="${p.slug}-visual">${u.expandDiagram} ↗</button></figcaption></figure></li>`;
+<details class="implementation"><summary>${text.details}<span class="expand" aria-hidden="true"></span></summary><div class="implementation__body"><p>${esc(c.detail)}</p></div></details></div></div>
+<figure class="work__visual">${renderDiagram(p, text)}<figcaption data-trace-note data-default="${esc(u.traceHint)}">${esc(u.traceHint)}</figcaption></figure></article>`;
   };
+  const rail = `<div class="works__rail" role="tablist" aria-label="${esc(text.selected[0])}">${selected.map(({ project: original }, i) => {
+    const p = project(original), c = text.selectedCopy[p.slug];
+    return `<button class="works__tab" type="button" role="tab" id="tab-${p.slug}" aria-controls="${p.slug}" aria-selected="${!i}" tabindex="${i ? -1 : 0}"><span class="works__tab-name">${esc(p.title)}</span><span class="works__tab-kind">${esc(c.type)}</span></button>`;
+  }).join('')}</div>`;
   const exploring = (slug) => {
     const p = project(bySlug.get(slug)), c = text.exploring[slug];
     return `<li class="experiment" id="${slug}">
@@ -641,16 +646,15 @@ function buildPage(lang) {
 <html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
 <title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
-${metadata(lang)}<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
+${metadata(lang)}<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
 <body><a class="skip" href="#main">${text.skip}</a>
 <div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">yiju<span aria-hidden="true">.</span></a>
 <nav class="nav__sections" aria-label="${text.nav}"><a href="#building">${text.work}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
 <div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button><button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>
-<main id="main"><section class="intro" aria-labelledby="name"><div class="intro__text"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${identity.professionalName} <span aria-hidden="true">·</span> ${text.location}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links" aria-label="${text.email}">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
-<aside class="hero-assistant" aria-labelledby="assistant-teaser-h"><div class="hero-assistant__body"><h2 id="assistant-teaser-h">${u.assistantTitle}</h2><p>${u.assistantDescription}</p><div class="question-list">${questionButtons}</div></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></aside></section>
-<ul class="credentials" aria-label="${text.background[0]}">${u.credentials.map(([label, value]) => `<li><span>${esc(label)}</span><strong>${esc(value)}</strong></li>`).join('')}</ul>
-<section class="section" id="building" aria-labelledby="work-h">${label('work-h', [text.selected[0], u.workLead])}<ol class="works">${selected.map(feature).join('\n')}</ol></section>
-<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<ul class="interests">${text.focus.map(f => `<li><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</li>`).join('\n')}</ul></section>
+<main id="main"><section class="intro" aria-labelledby="name"><div class="intro__text"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[identity.professionalName, u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links" aria-label="${text.email}">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
+<aside class="hero-assistant" aria-labelledby="assistant-teaser-h"><div class="hero-assistant__body"><h2 id="assistant-teaser-h">${u.assistantTitle}</h2><p>${u.assistantDescription}</p><form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><div class="question-chips">${u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}">${esc(q)}</button>`).join('')}</div></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></aside></section>
+<section class="section" id="building" aria-labelledby="work-h">${label('work-h', [text.selected[0], u.workLead])}<div class="works" data-works>${rail}${selected.map(feature).join('\n')}</div></section>
+<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">↓</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
 <section class="section" id="rest" aria-labelledby="exploring-h">${label('exploring-h', text.experiments)}<ul class="experiments">${exploringSlugs.map(exploring).join('\n')}</ul></section>
 <section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
 <section class="section index-section" id="others" aria-labelledby="index-h">${label('index-h', [text.index[0]])}<div class="project-index"><ul class="repo-list">${openSource.map(p => {

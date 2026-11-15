@@ -131,8 +131,76 @@ if ('IntersectionObserver' in window) {
   for (const section of document.querySelectorAll('main > section[id]')) observer.observe(section);
 }
 
-for (const button of document.querySelectorAll('[data-expand-work]')) button.addEventListener('click', () => {
-  const expanded = button.closest('.work').classList.toggle('is-expanded');
-  button.setAttribute('aria-expanded', String(expanded));
-  button.textContent = `${expanded ? text.collapseDiagram : text.expandDiagram} ${expanded ? '↙' : '↗'}`;
+// Asking from the introduction opens the same dialog, already answering.
+document.querySelector('[data-ask-form]')?.addEventListener('submit', event => {
+  event.preventDefault();
+  const field = event.currentTarget.elements.question;
+  openAssistant(field.value.trim()); field.value = '';
 });
+
+// Selected work: tabs over one stage. Links to a project that is not showing bring it forward first.
+const works = document.querySelector('[data-works]');
+if (works) {
+  const tabs = [...works.querySelectorAll('[role="tab"]')];
+  const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
+  const replay = (panel, name) => { panel.classList.remove(name); void panel.offsetWidth; panel.classList.add(name); };
+  const activate = (index, focus = false) => {
+    const changed = !panels[index].classList.contains('is-active');
+    tabs.forEach((tab, i) => { tab.setAttribute('aria-selected', String(i === index)); tab.tabIndex = i === index ? 0 : -1; panels[i].classList.toggle('is-active', i === index); });
+    if (changed) { replay(panels[index], 'is-entering'); replay(panels[index], 'is-fresh'); }
+    if (focus) tabs[index].focus();
+  };
+  tabs.forEach((tab, i) => tab.addEventListener('click', () => activate(i)));
+  works.querySelector('[role="tablist"]').addEventListener('keydown', event => {
+    const i = tabs.indexOf(document.activeElement); if (i < 0) return;
+    const next = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault(); activate(next, true);
+  });
+  const reveal = hash => {
+    let target = null;
+    try { target = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null; } catch {}
+    const index = panels.findIndex(panel => target && panel.contains(target));
+    if (index < 0) return false;
+    activate(index); works.scrollIntoView({ block: 'start' });
+    return true;
+  };
+  document.addEventListener('click', event => {
+    const link = event.target.closest?.('a[href^="#"]');
+    if (link && reveal(link.hash)) { event.preventDefault(); history.pushState(null, '', link.hash); }
+  });
+  addEventListener('hashchange', () => reveal(location.hash));
+  reveal(location.hash);
+  if ('IntersectionObserver' in window) {
+    const seen = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { seen.disconnect(); replay(panels.find(p => p.classList.contains('is-active')), 'is-fresh'); } }, { threshold: .5 });
+    seen.observe(works);
+  }
+}
+
+// Diagrams: point at a part to keep what feeds it and what it feeds, and quiet the rest.
+for (const svg of document.querySelectorAll('.dg')) {
+  const edges = [...svg.querySelectorAll('[data-from]')], boxes = [...svg.querySelectorAll('.dg-box')];
+  const note = svg.closest('figure')?.querySelector('[data-trace-note]');
+  const label = id => boxes.find(box => box.dataset.node === id)?.querySelector('.dg-name').textContent;
+  const reach = (start, from, to) => {
+    const found = new Set([start]), queue = [start];
+    while (queue.length) { const at = queue.pop(); for (const e of edges) if (e.dataset[from] === at && !found.has(e.dataset[to])) { found.add(e.dataset[to]); queue.push(e.dataset[to]); } }
+    return found;
+  };
+  let origin = null, touch = false;
+  const trace = id => {
+    if (id === origin) return;
+    origin = id; svg.classList.toggle('is-tracing', Boolean(id));
+    const up = id ? reach(id, 'to', 'from') : new Set(), down = id ? reach(id, 'from', 'to') : new Set();
+    for (const box of boxes) { box.classList.toggle('is-on', up.has(box.dataset.node) || down.has(box.dataset.node)); box.classList.toggle('is-origin', box.dataset.node === id); }
+    for (const e of edges) e.classList.toggle('is-on', (up.has(e.dataset.from) && up.has(e.dataset.to)) || (down.has(e.dataset.from) && down.has(e.dataset.to)));
+    if (!note) return;
+    if (!id) { note.textContent = note.dataset.default; return; }
+    const direct = (from, to) => [...new Set(edges.filter(e => e.dataset[to] === id).map(e => label(e.dataset[from])))].join(', ');
+    note.textContent = [direct('from', 'to'), label(id), direct('to', 'from')].filter(Boolean).join(' → ');
+  };
+  svg.addEventListener('pointerdown', event => { touch = event.pointerType !== 'mouse'; });
+  svg.addEventListener('pointerover', event => { if (event.pointerType === 'mouse') trace(event.target.closest('.dg-box')?.dataset.node || null); });
+  svg.addEventListener('pointerleave', event => { if (event.pointerType === 'mouse') trace(null); });
+  svg.addEventListener('click', event => { if (!touch) return; const id = event.target.closest('.dg-box')?.dataset.node || null; trace(id === origin ? null : id); });
+}
