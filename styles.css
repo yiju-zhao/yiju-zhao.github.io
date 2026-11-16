@@ -159,7 +159,7 @@ details[open] > summary .expand::after { transform: rotate(90deg); }
   .assistant-form button { min-height: 42px; }
 }
 @media print {
-  .nav, .assistant-dialog, .theme-toggle, .agent-links, .arrival, .worlds__bar, .system__map { display: none; }
+  .nav, .assistant-dialog, .theme-toggle, .agent-links, .worlds__bar, .system__map { display: none; }
   .page { padding: 0; }
   .intro { display: block; padding-block: 0 24px; }
   .section { padding-bottom: 24px; }
@@ -228,30 +228,13 @@ details[open] > summary .expand::after { transform: rotate(90deg); }
 
 body { overflow-x: clip; }
 
-/* Arrival. Asked on a fresh visit or a reload: people get the map, agents get llms.txt. */
-.arrival { display: none; }
-.is-arriving body { overflow: hidden; }
-.is-arriving .arrival { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: color-mix(in srgb, var(--color-paper) 64%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-.is-arriving:not(.is-landing) .system__map { visibility: hidden; }
-.arrival__inner { width: min(640px, 100%); }
-.arrival h2 { font-family: var(--font-editorial); font-size: clamp(44px, 7vw, 76px); font-weight: 400; line-height: 1.02; letter-spacing: -.045em; }
-.arrival p { max-width: 29em; margin-top: 18px; font-size: 17px; line-height: 1.7; color: var(--color-ink-2); }
-.arrival__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
-.arrival__choice { display: grid; gap: 6px; padding: 22px 24px 20px; border: 1px solid var(--color-rule-2); border-radius: 14px; background: var(--color-card); color: var(--color-ink); text-align: left; text-decoration: none; transition: border-color 160ms, translate 160ms; }
-.arrival__choice:first-child { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-paper); }
-.arrival__choice:hover { translate: 0 -2px; border-color: var(--color-accent); }
-.arrival__who { font: 500 23px/1.2 var(--font-display); letter-spacing: -.035em; }
-.arrival__what { font-size: 14px; color: var(--color-muted); }
-.arrival__choice:first-child .arrival__what { color: color-mix(in srgb, var(--color-paper) 72%, transparent); }
-.arrival__choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+/* Opening. On a fresh visit or reload the map assembles once, ring by ring. */
 @media (prefers-reduced-motion: no-preference) {
-  .is-landing .arrival { animation: arrival-out 560ms cubic-bezier(.4, 0, .2, 1) forwards; }
   .is-landing .map__ring { animation: ring-in 1100ms cubic-bezier(.2, .7, .2, 1) backwards; animation-delay: calc(180ms + var(--ring-delay, 0ms)); }
   .is-landing .planet__ball { animation: planet-in 900ms cubic-bezier(.2, .8, .3, 1.2) backwards; animation-delay: calc(420ms + var(--ring) * 120ms); }
   .is-landing .planet__label, .is-landing .map__sector, .is-landing .map__ring-label { animation: fade-in 700ms ease backwards; animation-delay: 1000ms; }
 }
 .map__ring[data-ring="1"] { --ring-delay: 70ms; } .map__ring[data-ring="2"] { --ring-delay: 140ms; } .map__ring[data-ring="3"] { --ring-delay: 210ms; }
-@keyframes arrival-out { to { opacity: 0; visibility: hidden; } }
 @keyframes ring-in { from { opacity: 0; scale: .7; } }
 @keyframes planet-in { from { opacity: 0; scale: 0; } }
 @keyframes fade-in { from { opacity: 0; } }
@@ -346,8 +329,6 @@ body { overflow-x: clip; }
   .system.is-focused .system__text { opacity: 1; }
 }
 @media (max-width: 760px) {
-  .arrival__choices { grid-template-columns: minmax(0, 1fr); }
-  .arrival__choice { padding: 18px 20px; }
   .worlds__list { grid-template-columns: minmax(0, 1fr); }
   .map__sector > span { font-size: 12px; }
   .map__spin, .planet__body, .map__sector > span, .map__ring-label > span { animation: none !important; }

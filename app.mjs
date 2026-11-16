@@ -230,31 +230,13 @@ if (map && panel) {
   landOnHash = () => { const index = indexOf(location.hash); if (index >= 0) open(index); };
 }
 
-// Arrival: people get the map; agents follow a plain link to llms.txt.
-window.portfolioReady = true;
-const arrival = document.querySelector('[data-arrival]'), page = document.querySelector('.page');
-if (document.documentElement.classList.contains('is-arriving') && arrival) {
-  page.inert = true;
-  const choices = [...arrival.querySelectorAll('.arrival__choice')], human = arrival.querySelector('[data-arrive]');
-  human.focus();
-  const land = () => {
-    const root = document.documentElement;
-    if (root.classList.contains('is-landing')) return;
-    page.inert = false;
-    if (reducedMotion) { root.classList.remove('is-arriving'); landOnHash(); return; }
-    root.classList.add('is-landing');
-    dispatchEvent(new Event('portfolio:land'));
-    setTimeout(() => { root.classList.remove('is-arriving'); landOnHash(); }, 560);
-    setTimeout(() => root.classList.remove('is-landing'), 2000);
-  };
-  human.addEventListener('click', land);
-  arrival.addEventListener('keydown', event => {
-    if (event.key === 'Escape') land();
-    if (event.key !== 'Tab') return;
-    const at = choices.indexOf(document.activeElement), next = event.shiftKey ? at - 1 : at + 1;
-    if (next < 0 || next >= choices.length) { event.preventDefault(); choices[(next + choices.length) % choices.length].focus(); }
-  });
-} else landOnHash();
+// Opening: on a fresh visit or reload the map assembles once and the stars make one short jump.
+const root = document.documentElement;
+if (root.classList.contains('is-landing') && !reducedMotion) {
+  dispatchEvent(new Event('portfolio:land'));
+  setTimeout(() => root.classList.remove('is-landing'), 2000);
+} else root.classList.remove('is-landing');
+landOnHash();
 
 // Diagrams: point at a part to keep what feeds it and what it feeds, and quiet the rest.
 for (const svg of document.querySelectorAll('.dg')) {

@@ -2,8 +2,6 @@ export const ui = {
   en: {
     map: 'Map', mapLabel: 'Project map', mapLead: 'Every world here is a project. The closer to the center, the further along it is. Ringed worlds have public code.',
     mapHint: 'Choose a world to land on it.', stages: ['Public', 'Validating', 'Building', 'Exploring'],
-    arrivalTitle: 'Who’s arriving?', arrivalText: 'There are two ways in. People get a map of the work. Agents get a plain-text profile.',
-    arrivalHuman: ['A person', 'Open the map'], arrivalAgent: ['An agent', 'Read llms.txt'],
     worldsTitle: 'All worlds', prev: 'Previous world', next: 'Next world', closeWorld: 'Back to the map',
     research: 'Research', background: 'Background', ask: 'Ask about me', reader: 'Recruiter brief',
     heroNote: 'A research practice. A builder’s portfolio.',
@@ -27,8 +25,6 @@ export const ui = {
   zh: {
     map: '星图', mapLabel: '项目星图', mapLead: '每颗星球是一个项目。离中心越近，走得越远；带环的星球有公开代码。',
     mapHint: '选一颗星球降落。', stages: ['已公开', '验证中', '构建中', '探索中'],
-    arrivalTitle: '来访者是？', arrivalText: '这里有两个入口：人会看到一张作品星图，agent 会拿到一份纯文本资料。',
-    arrivalHuman: ['一个人', '打开星图'], arrivalAgent: ['一个 agent', '读取 llms.txt'],
     worldsTitle: '全部星球', prev: '上一颗', next: '下一颗', closeWorld: '回到星图',
     research: '研究', background: '经历', ask: '问问我的工作', reader: '招聘速览',
     heroNote: '研究与构建，放在同一个工作台上。',

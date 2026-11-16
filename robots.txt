@@ -1,3 +1,4 @@
+# Agents: a plain-text profile is at https://yiju-zhao.github.io/llms.txt and structured data at https://yiju-zhao.github.io/profile.json
 User-agent: *
 Allow: /
 

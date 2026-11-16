@@ -689,15 +689,16 @@ ${d.p ? `<figure class="world__diagram">${renderDiagram(d.p, text)}<figcaption d
   const label = (id, pair) => `<header class="section__label"><h2 id="${id}">${esc(pair[0])}</h2>${pair[1] ? `<p>${esc(pair[1])}</p>` : ''}</header>`;
   const contacts = `<a href="mailto:${identity.email}">${text.email} ${arrow}</a><a href="${identity.linkedin}" rel="noopener">LinkedIn ${arrow}</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a>`;
   const questionButtons = u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}"><span>${esc(q)}</span><span aria-hidden="true">↗</span></button>`).join('');
-  // Decided before first paint: a fresh visit or a reload meets the arrival screen; moving
-  // between this site's own pages does not. If the script never loads, the screen lifts itself.
-  const head = `document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}try{var n=performance.getEntriesByType('navigation')[0],k=n?n.type:'navigate',o='';try{o=new URL(document.referrer).origin}catch(e){}if(k==='reload'||(k==='navigate'&&o!==location.origin)){document.documentElement.classList.add('is-arriving');setTimeout(function(){if(!window.portfolioReady)document.documentElement.classList.remove('is-arriving')},4000)}}catch(e){}`;
+  // Decided before first paint: a fresh visit or a reload plays the map's opening once;
+  // moving between this site's own pages does not. The animation is CSS, so it is harmless without the script.
+  const head = `document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}try{var n=performance.getEntriesByType('navigation')[0],k=n?n.type:'navigate',o='';try{o=new URL(document.referrer).origin}catch(e){}if(k==='reload'||(k==='navigate'&&o!==location.origin))document.documentElement.classList.add('is-landing')}catch(e){}`;
   const html = `<!doctype html>
 <html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
 <title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
 ${metadata(lang)}<script>${head}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
-<body><div class="arrival" data-arrival role="dialog" aria-modal="true" aria-labelledby="arrival-h" aria-describedby="arrival-d"><div class="arrival__inner"><h2 id="arrival-h">${esc(u.arrivalTitle)}</h2><p id="arrival-d">${esc(u.arrivalText)}</p><div class="arrival__choices"><button class="arrival__choice" type="button" data-arrive><span class="arrival__who">${esc(u.arrivalHuman[0])}</span><span class="arrival__what">${esc(u.arrivalHuman[1])}</span></button><a class="arrival__choice" href="llms.txt"><span class="arrival__who">${esc(u.arrivalAgent[0])}</span><span class="arrival__what">${esc(u.arrivalAgent[1])}</span></a></div></div></div>
+<body>
+<!-- For agents and crawlers: a plain-text profile is at /llms.txt, structured data at /profile.json, Markdown at /profile.md, and a recruiter brief at /recruiters.html. Everything on this page is also in the HTML below. -->
 <a class="skip" href="#main">${text.skip}</a>
 <div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">eason<span aria-hidden="true">.</span></a>
 <nav class="nav__sections" aria-label="${text.nav}"><a href="#map">${u.map}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>

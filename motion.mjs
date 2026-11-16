@@ -1,9 +1,9 @@
 // Stars behind the page. Nearer stars shift more with the pointer and with scrolling,
-// so moving through the page reads as moving through space. Landing from the arrival
-// screen plays one short jump. Nothing runs while the view is at rest.
+// so moving through the page reads as moving through space. A fresh visit or reload
+// plays one short jump. Nothing runs while the view is at rest.
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const root = document.documentElement;
-const JUMP = 1300; // ms
+const JUMP = 1100; // ms
 
 function stars() {
   const canvas = document.createElement('canvas');
@@ -33,8 +33,8 @@ function stars() {
       const y = ((s.y - sy * .1 * s.z - view.y * 16 * s.z) % h + h) % h;
       ctx.globalAlpha = .18 + s.z * .62;
       if (burst > .01) {
-        const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy) || 1, len = burst * (30 + d * .35) * s.z;
-        ctx.lineWidth = s.r * (.6 + s.z);
+        const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy) || 1, len = burst * (6 + d * .08) * s.z;
+        ctx.globalAlpha *= .75; ctx.lineWidth = s.r * (.5 + s.z * .6);
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx / d * len, y + dy / d * len); ctx.stroke();
       } else {
         const size = s.r * (.5 + s.z);
