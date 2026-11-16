@@ -41,7 +41,7 @@ function init() {
   let seed = 20261116;
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const gauss = () => Math.sqrt(-2 * Math.log(rand() || 1e-9)) * Math.cos(2 * Math.PI * rand());
-  const arms = Object.values(G.arms).map(d => d * Math.PI / 180), armHue = Object.keys(G.arms).map(id => G.colors[id]);
+  const armIds = Object.keys(G.arms), arms = armIds.map(id => G.arms[id] * Math.PI / 180), armHue = armIds.map(id => G.colors[id]), armLen = armIds.map(id => G.lengths[id]);
   const along = (base, r) => base + G.twist * r;
   const WARM = [[1, .96, .91], [1, .84, .72], [.97, .7, .56], [.8, .84, 1]];
   const pick = () => { const v = rand(); return v < .1 ? 3 : v < .3 ? 2 : v < .6 ? 1 : 0; };
@@ -49,15 +49,16 @@ function init() {
   const add = (list, x, y, z, rgb, a, size) => list.push(x, y, z, rgb[0], rgb[1], rgb[2], a, size);
   arms.forEach((base, ai) => {
     const hue = armHue[ai], tint = c => [c[0] * .7 + hue[0] * .3, c[1] * .7 + hue[1] * .3, c[2] * .7 + hue[2] * .3];
-    for (let i = 0; i < 2600; i++) {
-      const r = .05 + rand() ** .85 * 1.0, t = along(base, r) + gauss() * .19 * (1.15 - r * .5), rr = r + gauss() * .024;
+    const L = armLen[ai];
+    for (let i = 0; i < Math.round(2600 * L); i++) {
+      const r = .05 + rand() ** .85 * (L - .03), t = along(base, r) + gauss() * .19 * (1.15 - r * .5), rr = r + gauss() * .024;
       add(points, R * rr * Math.cos(t), gauss() * 26 * (1.2 - r * .7), R * rr * Math.sin(t), r > .22 ? tint(WARM[pick()]) : WARM[pick()], .45 + rand() * .55, 2.2 + rand() ** 4 * 7);
     }
-    for (let r = .06; r < 1.02; r += .01) {
+    for (let r = .06; r < L + .02; r += .01) {
       const t = along(base, r), x = R * r * Math.cos(t), z = R * r * Math.sin(t);
       add(nebula, x + gauss() * 30, gauss() * 10, z + gauss() * 30, r < .2 ? [.93, .62, .45] : hue, .05 * (1.15 - r * .6), 150 + 140 * (1 - r));
       const td = t - .13;
-      add(dust, R * r * Math.cos(td), 4, R * r * Math.sin(td), [0, 0, 0], .28, 52 + rand() * 30);
+      if (r < L * .95) add(dust, R * r * Math.cos(td), 4, R * r * Math.sin(td), [0, 0, 0], .28, 52 + rand() * 30);
     }
   });
   for (let i = 0; i < 2600; i++) { const r = Math.abs(gauss()) * .12, t = rand() * Math.PI * 2, y = gauss() * R * .045 * (1 - r * 2); add(points, R * r * Math.cos(t), y, R * r * Math.sin(t), WARM[rand() < .6 ? 1 : 0], .5 + rand() * .5, 2 + rand() * 3.5); }
@@ -65,8 +66,13 @@ function init() {
   // a far sky behind everything, so turning the camera always shows stars
   for (let i = 0; i < 1800; i++) { const u = rand() * 2 - 1, t = rand() * Math.PI * 2, d = 9000 + rand() * 3000, k = Math.sqrt(1 - u * u); add(points, d * k * Math.cos(t), d * u, d * k * Math.sin(t), WARM[rand() < .25 ? 3 : 0], .35 + rand() * .5, 18 + rand() * 22); }
   add(nebula, 0, 0, 0, [1, .82, .6], .5, 520); add(nebula, 0, 0, 0, [1, .9, .75], .7, 230);
-  const rings = [];
-  for (const z of G.zones) for (let i = 0; i <= 128; i++) { const t = i / 128 * Math.PI * 2; add(rings, z * R * Math.cos(t), 0, z * R * Math.sin(t), [1, .93, .86], .09, 1); }
+  // each arm carries short orbit marks where its stages sit, instead of rings round the whole disc
+  const rings = [], ARC = 24;
+  armIds.forEach((id, ai) => G.stageRadii[id].forEach((rk, k) => {
+    const mid = along(arms[ai], rk);
+    for (let i = 0; i <= ARC; i++) { const t = mid - .34 + .68 * i / ARC, fade = Math.sin(Math.PI * i / ARC); add(rings, rk * R * Math.cos(t), 0, rk * R * Math.sin(t), armHue[ai], .22 * fade + .02, 1); }
+  }));
+  const arcCount = armIds.length * 4;
 
   // ------------------------------------------------------------ WebGL
   let loc, bufs, bind;
@@ -139,12 +145,26 @@ function init() {
     if (cw < 6) return null;
     return [(cx / cw * .5 + .5) * W, (1 - (cy / cw * .5 + .5)) * H, cw];
   };
+  // The chart is lopsided (arms differ in length), so the home view is fitted: try every
+  // heading, keep the one where all planets and arm tips fill the windshield best.
+  const fitHome = () => {
+    const pitch = .62, sp = Math.sin(pitch), aspect = W / H, pts = placed.map(p => [p.x, p.z]);
+    let best = null;
+    for (let yaw = 0; yaw < Math.PI * 2; yaw += Math.PI / 36) {
+      const c = Math.cos(yaw), s = Math.sin(yaw);
+      let h0 = Infinity, h1 = -Infinity, d0 = Infinity, d1 = -Infinity;
+      for (const [x, z] of pts) { const h = x * c - z * s, d = x * s + z * c; h0 = Math.min(h0, h); h1 = Math.max(h1, h); d0 = Math.min(d0, d); d1 = Math.max(d1, d); }
+      const width = h1 - h0, height = (d1 - d0) * sp, need = Math.max(width / aspect, height);
+      if (!best || need < best.need) best = { need, yaw, hc: (h0 + h1) / 2, dc: (d0 + d1) / 2 };
+    }
+    const c = Math.cos(best.yaw), s = Math.sin(best.yaw);
+    return { x: best.hc * c + best.dc * s, z: -best.hc * s + best.dc * c, yaw: best.yaw, pitch, dist: best.need * 1.5 * T / 2 + 260, ox: 0, oy: 0 };
+  };
   const resize = () => {
     const rect = view.getBoundingClientRect(), first = W === 0;
     W = rect.width; H = rect.height; dpr = Math.min(devicePixelRatio || 1, 2);
     canvas.width = W * dpr; canvas.height = H * dpr; if (glReady) gl.viewport(0, 0, canvas.width, canvas.height);
-    // the windshield frames the chart; on phones the dash takes the bottom, so look a touch lower
-    home = { x: 0, z: 0, dist: wide.matches ? 2250 : 2900, yaw: .5, pitch: .62, ox: 0, oy: 0 };
+    home = fitHome();
     if (first) Object.assign(cam, home); else if (current < 0 && !tween) { cam.ox = home.ox; cam.oy = home.oy; }
     wake();
   };
@@ -214,7 +234,7 @@ function init() {
     gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA); bind(bufs.dust); gl.drawArrays(gl.POINTS, 0, bufs.dust.n);
     gl.uniform1f(loc.soft, 0); gl.blendFunc(gl.ONE, gl.ONE); bind(bufs.points); gl.drawArrays(gl.POINTS, 0, bufs.points.n);
     gl.uniform1f(loc.line, 1); bind(bufs.rings);
-    for (let k = 0; k < G.zones.length; k++) gl.drawArrays(gl.LINE_STRIP, k * 129, 129);
+    for (let k = 0; k < arcCount; k++) gl.drawArrays(gl.LINE_STRIP, k * (ARC + 1), ARC + 1);
     }
 
     // HTML stars and labels follow the same projection; nearer ones draw larger and on top
@@ -243,11 +263,11 @@ function init() {
   const locate = (x, z) => {
     const r = Math.hypot(x, z) / R;
     if (r < .2) return G.labels.core;
-    if (r > .92) return G.labels.deep;
+    if (r > 1.02) return G.labels.deep;
     const angle = Math.atan2(z, x);
     let arm = null, best = Infinity;
     for (const [id, deg] of Object.entries(G.arms)) { let d = angle - along(deg * Math.PI / 180, r); d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) < best) { best = Math.abs(d); arm = id; } }
-    const zone = G.zones.reduce((k, zz, i) => Math.abs(zz - r) < Math.abs(G.zones[k] - r) ? i : k, 0);
+    const radii = G.stageRadii[arm], zone = radii.reduce((k, zz, i) => Math.abs(zz - r) < Math.abs(radii[k] - r) ? i : k, 0);
     return `${G.labels.arms[arm]} · ${G.labels.zones[zone]}`;
   };
 

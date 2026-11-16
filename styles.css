@@ -319,7 +319,8 @@ body { overflow-x: clip; }
 .legend li { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px; }
 .legend__hues { display: inline-flex; gap: 3px; }
 .legend__hues i { width: 7px; height: 7px; border-radius: 50%; background: var(--area); }
-.legend__orbits { width: 26px; height: 14px; border: 1px solid #f4efe680; border-radius: 50%; box-shadow: 0 0 0 4px var(--hull), 0 0 0 5px #f4efe640; }
+.legend__orbits { width: 26px; height: 12px; border-top: 1px solid #f4efe680; border-radius: 50% 50% 0 0; box-shadow: inset 0 3px 0 -2px #f4efe640; }
+.legend__arm { width: 26px; height: 10px; border-top: 1.5px solid #f4efe6b3; border-radius: 50% 50% 0 0; rotate: -12deg; }
 .legend__ring { width: 22px; height: 8px; border: 1.5px solid #f4efe6b3; border-radius: 50%; rotate: -20deg; }
 .scanner__where { display: flex; align-items: center; gap: 8px; color: var(--hud); font-size: 13px; }
 .scanner__where::before { content: ""; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: var(--area); box-shadow: 0 0 10px var(--area); }

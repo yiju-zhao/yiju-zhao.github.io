@@ -606,8 +606,13 @@ const armBase = {};
   const areas = [...new Set(worlds.map((w) => w.group))];
   areas.forEach((id, i) => { armBase[id] = -100 + i * 90; });
   const along = (id, r) => armBase[id] * Math.PI / 180 + GALAXY.twist * r;
+  // an arm is as long as the work it holds: the busiest area reaches the rim, the others
+  // stop short. Along each arm, stages run outward from public to exploring.
+  const most = Math.max(...areas.map((id) => worlds.filter((w) => w.group === id).length));
+  GALAXY.lengths = Object.fromEntries(areas.map((id) => [id, +(0.42 + 0.58 * worlds.filter((w) => w.group === id).length / most).toFixed(3)]));
+  GALAXY.stageRadii = Object.fromEntries(areas.map((id) => [id, [0, 1, 2, 3].map((k) => +(0.24 + (GALAXY.lengths[id] * 0.9 - 0.24) * k / 3).toFixed(3))]));
   for (const id of areas) {
-    GALAXY.zones.forEach((zone, k) => {
+    GALAXY.stageRadii[id].forEach((zone, k) => {
       const cell = worlds.filter((w) => w.group === id && w.ring === k);
       cell.forEach((w, i) => {
         // a cell's worlds spread across the arm's width, alternating a little in and out
@@ -623,7 +628,7 @@ const armBase = {};
     if (a !== b && Math.hypot(a.wx - b.wx, a.wy - b.wy) < 36) throw new Error(`Worlds too close in the galaxy: ${a.slug} and ${b.slug}`);
   }
   GALAXY.arms = Object.fromEntries(areas.map((id) => [id, armBase[id]]));
-  GALAXY.armLabels = Object.fromEntries(areas.map((id) => { const t = along(id, 0.88) - 0.16; return [id, [Math.round(GALAXY.R * 0.9 * Math.cos(t)), Math.round(GALAXY.R * 0.9 * Math.sin(t))]]; }));
+  GALAXY.armLabels = Object.fromEntries(areas.map((id) => { const r = GALAXY.lengths[id] * 0.96, t = along(id, r) - 0.16; return [id, [Math.round(GALAXY.R * r * Math.cos(t)), Math.round(GALAXY.R * r * Math.sin(t))]]; }));
 }
 // Where a galaxy point sits before the script takes over: the default view, fitted to a 1.6:1 frame.
 const fallback = (wx, wy) => `--x:${(50 + wx / 21.8).toFixed(2)}%;--y:${(50 + wy / 22).toFixed(2)}%`;
@@ -681,12 +686,11 @@ function buildPage(lang) {
 <div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}">
 <div class="galaxy__layer" data-layer>
 ${Object.entries(GALAXY.armLabels).map(([id, [x, y]]) => `<span class="galaxy__arm" data-wx="${x}" data-wy="${y}" style="${fallback(x, y)};--area:var(--area-${id})" aria-hidden="true">${esc(text.groupNames[id])}</span>`).join('')}
-${GALAXY.zones.map((z, k) => `<span class="galaxy__zone" data-zone="${k}" data-wx="0" data-wy="${-Math.round(z * GALAXY.R)}" style="${fallback(0, -z * GALAXY.R)}" aria-hidden="true">${esc(u.stages[k])}</span>`).join('')}
 ${worlds.map(star).join('\n')}
 </div></div>
 <div class="viewport__glass" aria-hidden="true"><span class="viewport__marker"></span></div>
 </section>`;
-  const legend = `<ul class="legend"><li><span class="legend__hues" aria-hidden="true">${areas.map((id) => `<i style="--area:var(--area-${id})"></i>`).join('')}</span>${esc(u.legendColor)}</li><li><span class="legend__orbits" aria-hidden="true"></span>${esc(u.legendDistance)}</li><li><span class="legend__ring" aria-hidden="true"></span>${esc(u.legendRing)}</li></ul>`;
+  const legend = `<ul class="legend"><li><span class="legend__hues" aria-hidden="true">${areas.map((id) => `<i style="--area:var(--area-${id})"></i>`).join('')}</span>${esc(u.legendColor)}</li><li><span class="legend__arm" aria-hidden="true"></span>${esc(u.legendLength)}</li><li><span class="legend__orbits" aria-hidden="true"></span>${esc(u.legendDistance)}</li><li><span class="legend__ring" aria-hidden="true"></span>${esc(u.legendRing)}</li></ul>`;
   const scanner = `<aside class="console console--right scanner" aria-labelledby="scanner-h" data-scanner>
 <p class="console__label" id="scanner-h">${esc(u.scanner)}</p>
 <div class="scanner__idle"><p class="scanner__prompt">${esc(u.scanPrompt)}</p>${legend}</div>
