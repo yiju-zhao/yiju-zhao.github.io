@@ -132,22 +132,22 @@
     {
       "role": "Research engineering / LLM post-training",
       "evidence": [
-        "https://yiju-zhao.github.io/#background",
-        "https://yiju-zhao.github.io/#interests"
+        "https://yiju-zhao.github.io/about.html#background",
+        "https://yiju-zhao.github.io/about.html#interests"
       ]
     },
     {
       "role": "Agent infrastructure & evaluation",
       "evidence": [
         "https://yiju-zhao.github.io/#agent-pm",
-        "https://yiju-zhao.github.io/#interests"
+        "https://yiju-zhao.github.io/about.html#interests"
       ]
     },
     {
       "role": "Agent products",
       "evidence": [
         "https://yiju-zhao.github.io/#noteweaver",
-        "https://yiju-zhao.github.io/#interests"
+        "https://yiju-zhao.github.io/about.html#interests"
       ]
     }
   ],

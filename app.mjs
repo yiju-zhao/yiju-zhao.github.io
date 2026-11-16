@@ -105,19 +105,18 @@ try {
 
 })();
 
+// The theme switch lives on About; the flight deck is always dark.
 const themeButton = document.querySelector('[data-theme-toggle]');
-let savedTheme;
-try { savedTheme = localStorage.getItem('portfolio-theme'); } catch {}
-function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+if (themeButton) {
+  let savedTheme;
+  try { savedTheme = localStorage.getItem('portfolio-theme'); } catch {}
+  const applyTheme = theme => { document.documentElement.dataset.theme = theme; themeButton.setAttribute('aria-pressed', String(theme === 'dark')); };
+  applyTheme(savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  themeButton.addEventListener('click', () => {
+    const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(theme); try { localStorage.setItem('portfolio-theme', theme); } catch {}
+  });
 }
-if (savedTheme === 'light' || savedTheme === 'dark') applyTheme(savedTheme);
-else applyTheme(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-themeButton.addEventListener('click', () => {
-  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  applyTheme(theme); try { localStorage.setItem('portfolio-theme', theme); } catch {}
-});
 
 if ('IntersectionObserver' in window) {
   const links = [...document.querySelectorAll('.nav__sections a')];

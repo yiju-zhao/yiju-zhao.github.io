@@ -598,7 +598,9 @@ worlds.sort((a, b) => groups.findIndex((g) => g.id === a.group) - groups.findInd
 // The galaxy. Four spiral arms, one per area of work. A world's distance from the core
 // is how far along it is: public, validating, building, exploring. Coordinates are in
 // galaxy units (radius 1000); the page tilts the disc and lets visitors fly over it.
-const GALAXY = { R: 1000, tilt: 0.62, twist: 3.1, zones: [0.3, 0.46, 0.62, 0.79] };
+const GALAXY = { R: 1000, tilt: 0.62, twist: 3.1, zones: [0.3, 0.46, 0.62, 0.79],
+  // one hue per area of work: the arm, its planets and its group in the list share it
+  colors: { agent: [0.91, 0.55, 0.39], research: [0.63, 0.64, 1.0], product: [0.46, 0.78, 0.69], invest: [0.92, 0.76, 0.42] } };
 const armBase = {};
 {
   const areas = [...new Set(worlds.map((w) => w.group))];
@@ -661,28 +663,38 @@ function buildPage(lang) {
   const told = new Map(worlds.map((w) => [w.slug, describe(w)]));
   const where = (w) => `${text.groupNames[w.group]} · ${u.stages[w.ring]}`;
 
+  const home = lang === 'en' ? 'index.html' : 'zh.html', about = lang === 'en' ? 'about.html' : 'zh-about.html';
+  const areas = [...new Set(worlds.map((w) => w.group))];
   const star = (w) => {
     const d = told.get(w.slug);
     const cls = `star${majors.includes(w.slug) ? ' star--major' : ''}${d.repo ? ' star--ringed' : ''}`;
-    return `<a class="${cls}" href="#${w.slug}" data-world="${w.slug}" data-wx="${w.wx}" data-wy="${w.wy}" data-zone="${w.ring}" style="${fallback(w.wx, w.wy)}" aria-label="${esc(d.title)}, ${esc(where(w))}"><span class="star__body"></span><span class="star__label" aria-hidden="true">${esc(d.title)}</span></a>`;
+    return `<a class="${cls}" href="#${w.slug}" data-world="${w.slug}" data-area="${w.group}" data-wx="${w.wx}" data-wy="${w.wy}" data-zone="${w.ring}" style="${fallback(w.wx, w.wy)};--area:var(--area-${w.group})" aria-label="${esc(d.title)}, ${esc(where(w))}"><span class="star__body"></span><span class="star__label" aria-hidden="true">${esc(d.title)}</span></a>`;
   };
-  const config = { ...GALAXY, labels: { arms: Object.fromEntries(Object.keys(GALAXY.arms).map((id) => [id, text.groupNames[id]])), zones: u.stages, core: u.core, deep: u.deep, land: u.targetHint } };
-  const galaxy = `<section class="galaxy" id="map" aria-labelledby="name" data-galaxy="${esc(JSON.stringify(config))}">
-<div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}" aria-describedby="galaxy-hint">
+  const config = { ...GALAXY, labels: { arms: Object.fromEntries(areas.map((id) => [id, text.groupNames[id]])), zones: u.stages, core: u.core, deep: u.deep, chart: u.chartWhere, approaching: u.approaching } };
+  const countLine = lang === 'zh' ? `${areas.length} 个方向，${worlds.length} 个项目` : `${worlds.length} projects in ${areas.length} areas`;
+  const manifest = areas.map((id) => {
+    const members = worlds.filter((w) => w.group === id);
+    return `<section class="manifest__area" style="--area:var(--area-${id})" aria-labelledby="area-${id}"><h2 id="area-${id}"><span class="manifest__dot" aria-hidden="true"></span>${esc(text.groupNames[id])}<span class="manifest__n">${members.length}</span></h2><ol>${members.map((w) => `<li><a class="manifest__item${majors.includes(w.slug) ? ' is-major' : ''}" href="#${w.slug}" data-world="${w.slug}"><span class="manifest__name">${esc(told.get(w.slug).title)}</span><span class="manifest__stage" data-zone="${w.ring}">${esc(u.stages[w.ring])}</span></a></li>`).join('')}</ol></section>`;
+  }).join('\n');
+  const viewport = `<section class="viewport" aria-label="${esc(u.mapLabel)}">
+<div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}" aria-describedby="deck-hint">
 <div class="galaxy__layer" data-layer>
-${Object.entries(GALAXY.armLabels).map(([id, [x, y]]) => `<span class="galaxy__arm" data-wx="${x}" data-wy="${y}" style="${fallback(x, y)}" aria-hidden="true">${esc(text.groupNames[id])}</span>`).join('')}
+${Object.entries(GALAXY.armLabels).map(([id, [x, y]]) => `<span class="galaxy__arm" data-wx="${x}" data-wy="${y}" style="${fallback(x, y)};--area:var(--area-${id})" aria-hidden="true">${esc(text.groupNames[id])}</span>`).join('')}
 ${GALAXY.zones.map((z, k) => `<span class="galaxy__zone" data-zone="${k}" data-wx="0" data-wy="${-Math.round(z * GALAXY.R)}" style="${fallback(0, -z * GALAXY.R)}" aria-hidden="true">${esc(u.stages[k])}</span>`).join('')}
 ${worlds.map(star).join('\n')}
-</div><span class="galaxy__reticle" aria-hidden="true"></span></div>
-<div class="galaxy__intro"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p></div>
+</div></div>
+<p class="viewport__where" data-hud-where></p>
 <canvas class="galaxy__minimap" data-minimap width="132" height="132" aria-hidden="true"></canvas>
-<div class="hud"><p class="hud__readout"><span data-hud-where></span><span class="hud__target" data-hud-target></span></p><p class="hud__hint" id="galaxy-hint">${esc(u.flyHint)}</p><div class="hud__controls"><button type="button" data-zoom="-1" aria-label="${esc(u.zoomOut)}">−</button><button type="button" data-zoom="1" aria-label="${esc(u.zoomIn)}">+</button><button type="button" class="hud__home" data-home>${esc(u.home)}</button></div></div>
+<p class="legend"><span><span class="legend__hues" aria-hidden="true">${areas.map((id) => `<i style="--area:var(--area-${id})"></i>`).join('')}</span>${esc(u.legendColor)}</span><span><span class="legend__orbits" aria-hidden="true"></span>${esc(u.legendDistance)}</span><span><span class="legend__ring" aria-hidden="true"></span>${esc(u.legendRing)}</span></p>
+<p class="viewport__hint" id="deck-hint">${esc(u.chartHint)}</p>
+<div class="viewport__controls"><button type="button" data-zoom="-1" aria-label="${esc(u.zoomOut)}">−</button><button type="button" data-zoom="1" aria-label="${esc(u.zoomIn)}">+</button></div>
+<button class="viewport__back" type="button" data-back><span aria-hidden="true">←</span> ${esc(u.back)}</button>
 </section>`;
 
   const world = (w) => {
     const d = told.get(w.slug);
     const links = [d.repo ? `<a href="${esc(d.repo)}" rel="noopener">${text.source} ${arrow}</a>` : '', d.live ? `<a href="${esc(d.live)}" rel="noopener">${text.live} ${arrow}</a>` : ''].join('');
-    return `<article class="world" id="${w.slug}" aria-labelledby="${w.slug}-h">
+    return `<article class="world" id="${w.slug}" aria-labelledby="${w.slug}-h" style="--area:var(--area-${w.group})">
 <p class="world__where">${esc(where(w))}${d.kind ? ` · ${esc(d.kind)}` : ''}</p>
 <h3 id="${w.slug}-h" tabindex="-1">${esc(d.title)}</h3>
 <p class="world__lede">${esc(d.lede)}</p>${d.body ? `<p class="world__body">${esc(d.body)}</p>` : ''}${d.detail ? `<p class="world__body">${esc(d.detail)}</p>` : ''}${stacks[w.slug] ? `<ul class="stack" aria-label="${esc(d.title)} ${esc(text.tools)}">${stacks[w.slug].map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
@@ -693,35 +705,51 @@ ${d.p ? `<figure class="world__diagram">${renderDiagram(d.p, text)}<figcaption d
   const label = (id, pair) => `<header class="section__label"><h2 id="${id}">${esc(pair[0])}</h2>${pair[1] ? `<p>${esc(pair[1])}</p>` : ''}</header>`;
   const contacts = `<a href="mailto:${identity.email}">${text.email} ${arrow}</a><a href="${identity.linkedin}" rel="noopener">LinkedIn ${arrow}</a><a href="${GH}" rel="noopener">GitHub ${arrow}</a>`;
   const questionButtons = u.questions.map(q => `<button type="button" data-ask data-question="${esc(q)}"><span>${esc(q)}</span><span aria-hidden="true">↗</span></button>`).join('');
-  // Decided before first paint: a fresh visit or a reload plays the map's opening once;
+  // Decided before first paint: a fresh visit or a reload plays the opening once;
   // moving between this site's own pages does not. The animation is CSS, so it is harmless without the script.
   const head = `document.documentElement.classList.add('js');try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}try{var n=performance.getEntriesByType('navigation')[0],k=n?n.type:'navigate',o='';try{o=new URL(document.referrer).origin}catch(e){}if(k==='reload'||(k==='navigate'&&o!==location.origin))document.documentElement.classList.add('is-landing')}catch(e){}`;
-  const html = `<!doctype html>
+  const otherLang = { deck: text.switchPath, about: lang === 'en' ? 'zh-about.html' : 'about.html' };
+  const nav = (page) => `<header class="nav${page === 'deck' ? ' nav--deck' : ''}" id="top"><a class="wordmark" href="${home}" aria-label="${esc(text.home)}">eason<span aria-hidden="true">.</span></a>
+<nav class="nav__sections" aria-label="${text.nav}"><a href="${home}"${page === 'deck' ? ' aria-current="page"' : ''}>${u.deck}</a><a href="${about}"${page === 'about' ? ' aria-current="page"' : ''}>${u.aboutNav}</a></nav>
+<div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button>${page === 'about' ? `<button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button>` : ''}<a class="language-switch" href="${otherLang[page]}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>`;
+  const dialog = `<dialog class="assistant-dialog" id="portfolio-assistant" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="assistant-dialog__inner"><header class="assistant-dialog__header"><div><h2 id="dialog-title">${u.dialogTitle}</h2><p class="assistant-dialog__intro" id="dialog-description">${u.dialogDescription}</p></div><button class="icon-button" data-close-assistant type="button" aria-label="${u.close}">×</button></header><div class="question-list">${questionButtons}</div><form class="assistant-form" id="assistant-form"><input id="assistant-question" name="question" type="text" minlength="2" maxlength="1200" required autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send} ↗</button></form><div id="assistant-result" class="assistant-result" aria-live="polite" aria-atomic="false">${u.empty}</div><footer class="assistant-dialog__footer"><button data-clear-answer type="button">${u.clear}</button><span>${u.privacy}</span></footer></div></dialog>`;
+  const shell = (page, title, body) => `<!doctype html>
 <html lang="${lang === 'en' ? 'en' : 'zh-CN'}">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark">
-<title>${esc(text.title)}</title><meta name="description" content="${esc(text.meta)}">
-${metadata(lang)}<script>${head}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
-<body>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="${page === 'deck' ? 'dark' : 'light dark'}">
+<title>${esc(title)}</title><meta name="description" content="${esc(text.meta)}">
+${metadata(lang, page)}<script>${head}${page === 'deck' ? "document.documentElement.dataset.theme='dark';" : ''}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
+<body${page === 'deck' ? ' class="deck-page"' : ''}>
 <!-- For agents and crawlers: a plain-text profile is at /llms.txt, structured data at /profile.json, Markdown at /profile.md, and a recruiter brief at /recruiters.html. Everything on this page is also in the HTML below. -->
-<a class="skip" href="#main">${text.skip}</a>
-<div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">eason<span aria-hidden="true">.</span></a>
-<nav class="nav__sections" aria-label="${text.nav}"><a href="#map">${u.map}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
-<div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button><button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>
-<main id="main">${galaxy}
-<section class="galaxy-notes" aria-label="${esc(u.notesLabel)}"><div><p class="intro__context">${text.context}</p>
-<form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><noscript><p class="galaxy-notes__noscript"><a href="profile.md">${u.profileMd} ↗</a></p></noscript>
-<div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
-<p class="galaxy-notes__legend">${esc(u.mapLead)}</p></section>
-<section class="worlds" id="worlds" data-worlds aria-labelledby="worlds-h"><div class="worlds__bar"><span class="worlds__count" data-world-count></span><button class="worlds__step" type="button" data-step="-1" aria-label="${esc(u.prev)}">←</button><button class="worlds__step" type="button" data-step="1" aria-label="${esc(u.next)}">→</button><button class="worlds__step" type="button" data-close-world aria-label="${esc(u.closeWorld)}">×</button></div><h2 class="worlds__title" id="worlds-h">${esc(u.worldsTitle)}</h2><div class="worlds__list">${worlds.map(world).join('\n')}</div></section>
-<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">→</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
-<section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
-<section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}<div class="about__body">${text.aboutParagraphs.map(p => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div></div></section></main>
-<div class="agent-links"><span>${u.profileLinks}</span><a href="recruiters.html">${u.reader} ↗</a><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="#top">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>
-<dialog class="assistant-dialog" id="portfolio-assistant" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="assistant-dialog__inner"><header class="assistant-dialog__header"><div><h2 id="dialog-title">${u.dialogTitle}</h2><p class="assistant-dialog__intro" id="dialog-description">${u.dialogDescription}</p></div><button class="icon-button" data-close-assistant type="button" aria-label="${u.close}">×</button></header><div class="question-list">${questionButtons}</div><form class="assistant-form" id="assistant-form"><input id="assistant-question" name="question" type="text" minlength="2" maxlength="1200" required autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send} ↗</button></form><div id="assistant-result" class="assistant-result" aria-live="polite" aria-atomic="false">${u.empty}</div><footer class="assistant-dialog__footer"><button data-clear-answer type="button">${u.clear}</button><span>${u.privacy}</span></footer></div></dialog>
+${body}
+${dialog}
 </body></html>`;
-  const filename = lang === 'en' ? 'index.html' : 'zh.html';
-  writeFileSync(new URL(filename, import.meta.url), html);
-  console.log(`${filename}: ${worlds.length} stars on ${Object.keys(GALAXY.arms).length} arms, 4 interests`);
+
+  const deck = shell('deck', text.title, `<a class="skip" href="#manifest">${esc(u.skipList)}</a>
+${nav('deck')}
+<main id="main" class="deck" data-galaxy="${esc(JSON.stringify(config))}">
+<aside class="manifest" id="manifest" aria-labelledby="name" data-manifest>
+<div class="manifest__intro"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="manifest__role">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="manifest__lede">${text.intro}</p></div>
+<button class="manifest__toggle" type="button" data-manifest-toggle aria-expanded="false" aria-controls="manifest-list"><span>${esc(countLine)}</span><span class="expand" aria-hidden="true"></span></button>
+<div class="manifest__list" id="manifest-list"><p class="manifest__count">${esc(countLine)}</p>
+${manifest}</div>
+<div class="manifest__foot"><a class="manifest__about" href="${about}">${esc(u.aboutMore)} <span aria-hidden="true">→</span></a><div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></div>
+</aside>
+${viewport}
+<section class="worlds" id="worlds" data-worlds aria-labelledby="worlds-h"><div class="worlds__bar"><span class="worlds__count"><span>${esc(u.destination)}</span> <span data-world-count></span></span><button class="worlds__step" type="button" data-step="-1" aria-label="${esc(u.prev)}">←</button><button class="worlds__step" type="button" data-step="1" aria-label="${esc(u.next)}">→</button><button class="worlds__step" type="button" data-close-world aria-label="${esc(u.back)}">×</button></div><h2 class="worlds__title" id="worlds-h">${esc(u.worldsTitle)}</h2><div class="worlds__list">${worlds.map(world).join('\n')}</div></section>
+</main>`);
+
+  const toProject = (href) => href.startsWith('#') ? `${home}${href}` : href;
+  const aboutPage = shell('about', u.aboutTitle, `<a class="skip" href="#main">${text.skip}</a>
+<div class="page">${nav('about')}
+<main id="main"><section class="about-hero" aria-labelledby="about-title"><h1 id="about-title">${esc(u.aboutHeading)}</h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></section>
+<section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${toProject(l.href)}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">→</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
+<section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
+<section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}<div class="about__body">${text.aboutParagraphs.map(p => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div><p class="about__deck"><a href="${home}">${esc(u.deckLink)} <span aria-hidden="true">→</span></a></p></div></section></main>
+<div class="agent-links"><span>${u.profileLinks}</span><a href="recruiters.html">${u.reader} ↗</a><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="${home}">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>`);
+
+  writeFileSync(new URL(home, import.meta.url), deck);
+  writeFileSync(new URL(about, import.meta.url), aboutPage);
+  console.log(`${home} + ${about}: ${worlds.length} planets on ${areas.length} arms`);
 }
 
 for (const lang of ['en', 'zh']) buildPage(lang);

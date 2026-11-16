@@ -5,7 +5,7 @@ import { publicProfile, knowledgeRecords, SITE } from '../lib/public-profile.mjs
 import { copy } from '../content.mjs';
 const root = new URL('../', import.meta.url);
 const read = path => readFileSync(new URL(path, root), 'utf8');
-const files = ['index.html', 'zh.html', 'recruiters.html'];
+const files = ['index.html', 'zh.html', 'about.html', 'zh-about.html', 'recruiters.html'];
 const unescape = s => s.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>');
 const ids = file => [...read(file).matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 const plain = s => unescape(s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ' ').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
@@ -36,13 +36,14 @@ test('bilingual pages keep complete project graphs and labeled source lookup', (
     assert.ok(html.includes('<noscript>'));
     for (const hidden of ['cbrs', 'a-share', 'h-level', 'applications', 'job-survey']) assert.ok(!ids(file).includes(hidden));
   }
-  const englishBody = read('index.html').split('<body>')[1];
+  const englishBody = read('index.html').split(/<body[^>]*>/)[1];
   assert.equal((plain(englishBody).match(/[\u3400-\u9fff]/g) || []).join(''), '中文');
 });
 test('structured person data and recruiter-facing files agree with visible career facts', () => {
   const p = publicProfile();
   assert.deepEqual(JSON.parse(read('profile.json')), p);
-  const html = read('index.html'), visible = plain(html.split('<body>')[1]);
+  // the flight deck carries the projects; About carries the career and research details
+  const html = read('index.html'), visible = plain(html.split(/<body[^>]*>/)[1] + read('about.html').split(/<body[^>]*>/)[1]);
   const graph = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'];
   assert.equal(graph.find(x => x['@type'] === 'ProfilePage').mainEntity['@id'], `${SITE}/#person`);
   const person = graph.find(x => x['@type'] === 'Person');
@@ -57,7 +58,8 @@ test('structured person data and recruiter-facing files agree with visible caree
 });
 test('assistant document anchors are resolvable and no private career details enter the public profile', () => {
   for (const lang of ['en','zh']) for (const r of knowledgeRecords(lang)) {
-    assert.ok(ids(lang === 'en' ? 'index.html' : 'zh.html').includes(r.href.slice(1)));
+    const [file, anchor] = r.href.split('#');
+    assert.ok(files.includes(file) && ids(file).includes(anchor), `${lang}: unresolved ${r.href}`);
     assert.ok(r.text.length > 0 && r.text.length < 2500);
   }
   const data = read('profile.json') + read('profile.md');
@@ -65,12 +67,13 @@ test('assistant document anchors are resolvable and no private career details en
 });
 test('sitemap and crawler hints point to real canonical pages without synthetic anchor URLs', () => {
   const locations = [...read('sitemap.xml').matchAll(/<loc>(.*?)<\/loc>/g)].map(m => m[1]);
-  assert.equal(locations.length, 3);
+  assert.equal(locations.length, 5);
   for (const location of locations) { assert.ok(!location.includes('#')); const u = new URL(location); assert.ok(existsSync(new URL(u.pathname === '/' ? 'index.html' : u.pathname.slice(1), root))); }
   assert.ok(read('robots.txt').includes(`Sitemap: ${SITE}/sitemap.xml`));
   assert.ok(read('llms.txt').includes(`${SITE}/profile.json`));
   assert.ok(read('index.html').includes(`<link rel="canonical" href="${SITE}/">`));
   assert.ok(read('zh.html').includes(`<link rel="canonical" href="${SITE}/zh.html">`));
+  assert.ok(read('about.html').includes(`<link rel="canonical" href="${SITE}/about.html">`));
 });
 test('the social image is a real 1200 by 630 PNG and CSS tokens are defined', () => {
   const png = readFileSync(new URL('assets/social.png', root));

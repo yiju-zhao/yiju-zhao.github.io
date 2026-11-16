@@ -1,6 +1,9 @@
 export const ui = {
   en: {
-    map: 'Map', mapLabel: 'Project galaxy. Arrow keys or WASD to fly, Q and E to turn, + and − to move closer, Enter to land on the star in the sights.', mapLead: 'Each star is a project. The four spiral arms are areas of work, and the closer a star is to the core, the further along it is. Stars with an orbit ring have public code.',
+    deck: 'Flight deck', aboutNav: 'About', aboutMore: 'About me, research and background', aboutTitle: 'About | Eason Zhao', aboutHeading: 'About Eason', deckLink: 'Explore the projects on the flight deck', skipList: 'Skip to the project list',
+    legendColor: 'Colour is the area of work', legendDistance: 'Closer to the core is further along', legendRing: 'A ring means public code',
+    chartHint: 'Drag to turn, scroll to zoom, click a planet to fly there.', back: 'Back to the chart', destination: 'Destination', chartWhere: 'Star chart', approaching: 'Approaching',
+    map: 'Map', mapLabel: 'Star chart of all projects. Drag or use the arrow keys to turn, + and − to zoom; each planet is a link to its project.', mapLead: 'Each star is a project. The four spiral arms are areas of work, and the closer a star is to the core, the further along it is. Stars with an orbit ring have public code.',
     flyHint: 'Drag to look around. WASD, Shift + drag or two fingers to fly. Ctrl + scroll or pinch to move closer. Click a star to land.', zoomIn: 'Zoom in', zoomOut: 'Zoom out', home: 'Back to the core', core: 'Galactic core', deep: 'Deep space', targetHint: 'Enter to land', notesLabel: 'About this map',
     stages: ['Public', 'Validating', 'Building', 'Exploring'],
     worldsTitle: 'All worlds', prev: 'Previous world', next: 'Next world', closeWorld: 'Back to the map',
@@ -24,7 +27,10 @@ export const ui = {
     allProjects: 'More tools & experiments', jumpWork: 'Explore the work',
   },
   zh: {
-    map: '星图', mapLabel: '项目星系。方向键或 WASD 飞行，Q / E 转向，+ / − 靠近或远离，Enter 降落到准星对准的恒星。', mapLead: '每颗恒星是一个项目。四条旋臂是四个方向，离银心越近，走得越远；带轨道环的有公开代码。',
+    deck: '驾驶舱', aboutNav: '关于', aboutMore: '关于我、研究方向与经历', aboutTitle: '关于 | Eason Zhao', aboutHeading: '关于 Eason', deckLink: '去驾驶舱看看这些项目', skipList: '跳到项目清单',
+    legendColor: '颜色代表方向', legendDistance: '离银心越近，进度越靠前', legendRing: '带环的有公开代码',
+    chartHint: '拖动转向，滚轮缩放，点击星球前往。', back: '返回星图', destination: '目的地', chartWhere: '星图', approaching: '正在前往',
+    map: '星图', mapLabel: '全部项目的星图。拖动或方向键转向，+ / − 缩放；每颗星球都是通往项目的链接。', mapLead: '每颗恒星是一个项目。四条旋臂是四个方向，离银心越近，走得越远；带轨道环的有公开代码。',
     flyHint: '拖动环顾四周；WASD、Shift + 拖动或双指平移飞行；Ctrl + 滚轮或双指捏合靠近；点击恒星降落。', zoomIn: '放大', zoomOut: '缩小', home: '回到银心', core: '银心', deep: '深空', targetHint: '按 Enter 降落', notesLabel: '关于这张星图',
     stages: ['已公开', '验证中', '构建中', '探索中'],
     worldsTitle: '全部星球', prev: '上一颗', next: '下一颗', closeWorld: '回到星图',

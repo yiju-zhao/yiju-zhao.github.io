@@ -96,9 +96,9 @@ Codex, Claude Code and Pi each use their own connection mechanism. The bridge co
 
 ## Role interests
 
-- Research engineering / LLM post-training: https://yiju-zhao.github.io/#background, https://yiju-zhao.github.io/#interests
-- Agent infrastructure & evaluation: https://yiju-zhao.github.io/#agent-pm, https://yiju-zhao.github.io/#interests
-- Agent products: https://yiju-zhao.github.io/#noteweaver, https://yiju-zhao.github.io/#interests
+- Research engineering / LLM post-training: https://yiju-zhao.github.io/about.html#background, https://yiju-zhao.github.io/about.html#interests
+- Agent infrastructure & evaluation: https://yiju-zhao.github.io/#agent-pm, https://yiju-zhao.github.io/about.html#interests
+- Agent products: https://yiju-zhao.github.io/#noteweaver, https://yiju-zhao.github.io/about.html#interests
 
 ## Scope and status
 

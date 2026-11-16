@@ -1,8 +1,8 @@
-// The galaxy, in 3D. A WebGL point cloud of a spiral disc that visitors fly through:
-// drag to look around, WASD / arrows / two fingers to fly, pinch or Ctrl + scroll to
-// move closer. Clicking a star (or Enter on the star in the sights) flies there and
-// lands, which opens that project's panel. Every star is still a real link in the HTML,
-// so without WebGL or scripting the page keeps a flat map that works.
+// The flight deck. A 3D star chart of every project: one arm per area of work, closer
+// to the core = further along. Choosing a planet (on the chart or in the list) flies the
+// ship there and splits the screen: the planet on one side, its project on the other.
+// Every planet is still a real link in the HTML, so without WebGL or scripting the page
+// keeps a flat chart and a plain list that work.
 const section = document.querySelector('[data-galaxy]');
 const panel = document.querySelector('[data-worlds]');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,8 +28,10 @@ function init() {
   });
   const stars = placed.filter(p => p.el.classList.contains('star'));
   const articles = stars.map(s => document.getElementById(s.el.dataset.world));
-  const reticle = view.querySelector('.galaxy__reticle');
-  const whereOut = section.querySelector('[data-hud-where]'), targetOut = section.querySelector('[data-hud-target]');
+  const whereOut = section.querySelector('[data-hud-where]');
+  const manifest = section.querySelector('[data-manifest]');
+  const items = stars.map(s => manifest?.querySelector(`.manifest__item[data-world="${s.el.dataset.world}"]`));
+  const title = s => s.el.querySelector('.star__label').textContent;
   const minimap = section.querySelector('[data-minimap]'), mm = minimap.getContext('2d');
   const count = panel.querySelector('[data-world-count]');
 
@@ -37,24 +39,25 @@ function init() {
   let seed = 20261116;
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const gauss = () => Math.sqrt(-2 * Math.log(rand() || 1e-9)) * Math.cos(2 * Math.PI * rand());
-  const arms = Object.values(G.arms).map(d => d * Math.PI / 180);
+  const arms = Object.values(G.arms).map(d => d * Math.PI / 180), armHue = Object.keys(G.arms).map(id => G.colors[id]);
   const along = (base, r) => base + G.twist * r;
   const WARM = [[1, .96, .91], [1, .84, .72], [.97, .7, .56], [.8, .84, 1]];
   const pick = () => { const v = rand(); return v < .1 ? 3 : v < .3 ? 2 : v < .6 ? 1 : 0; };
   const nebula = [], dust = [], points = [];
   const add = (list, x, y, z, rgb, a, size) => list.push(x, y, z, rgb[0], rgb[1], rgb[2], a, size);
-  for (const base of arms) {
+  arms.forEach((base, ai) => {
+    const hue = armHue[ai], tint = c => [c[0] * .7 + hue[0] * .3, c[1] * .7 + hue[1] * .3, c[2] * .7 + hue[2] * .3];
     for (let i = 0; i < 2600; i++) {
       const r = .05 + rand() ** .85 * 1.0, t = along(base, r) + gauss() * .19 * (1.15 - r * .5), rr = r + gauss() * .024;
-      add(points, R * rr * Math.cos(t), gauss() * 26 * (1.2 - r * .7), R * rr * Math.sin(t), WARM[pick()], .45 + rand() * .55, 2.2 + rand() ** 4 * 7);
+      add(points, R * rr * Math.cos(t), gauss() * 26 * (1.2 - r * .7), R * rr * Math.sin(t), r > .22 ? tint(WARM[pick()]) : WARM[pick()], .45 + rand() * .55, 2.2 + rand() ** 4 * 7);
     }
     for (let r = .06; r < 1.02; r += .01) {
       const t = along(base, r), x = R * r * Math.cos(t), z = R * r * Math.sin(t);
-      add(nebula, x + gauss() * 30, gauss() * 10, z + gauss() * 30, rand() < .22 ? [.55, .6, 1] : [.93, .55, .4], .055 * (1.15 - r * .6), 150 + 140 * (1 - r));
+      add(nebula, x + gauss() * 30, gauss() * 10, z + gauss() * 30, r < .2 ? [.93, .62, .45] : hue, .05 * (1.15 - r * .6), 150 + 140 * (1 - r));
       const td = t - .13;
       add(dust, R * r * Math.cos(td), 4, R * r * Math.sin(td), [0, 0, 0], .28, 52 + rand() * 30);
     }
-  }
+  });
   for (let i = 0; i < 2600; i++) { const r = Math.abs(gauss()) * .12, t = rand() * Math.PI * 2, y = gauss() * R * .045 * (1 - r * 2); add(points, R * r * Math.cos(t), y, R * r * Math.sin(t), WARM[rand() < .6 ? 1 : 0], .5 + rand() * .5, 2 + rand() * 3.5); }
   for (let i = 0; i < 1400; i++) { const r = Math.sqrt(rand()) * 1.35, t = rand() * Math.PI * 2; add(points, R * r * Math.cos(t), gauss() * 90, R * r * Math.sin(t), WARM[rand() < .2 ? 3 : 0], .3 + rand() * .5, 2 + rand() * 2.5); }
   // a far sky behind everything, so turning the camera always shows stars
@@ -107,6 +110,7 @@ function init() {
   section.classList.toggle('no-gl', !glReady);
 
   // ------------------------------------------------------------ camera: orbit a point on the disc
+  const wide = matchMedia('(min-width: 861px)');
   const FOV = 50 * Math.PI / 180, T = 1 / Math.tan(FOV / 2);
   const cam = { x: 0, z: 0, dist: 2300, yaw: .5, pitch: .62, ox: 0, oy: 0 };
   let W = 0, H = 0, dpr = 1, home = { ...cam }, vp = new Float32Array(16), eye = [0, 0, 0];
@@ -137,9 +141,9 @@ function init() {
     const rect = view.getBoundingClientRect(), first = W === 0;
     W = rect.width; H = rect.height; dpr = Math.min(devicePixelRatio || 1, 2);
     canvas.width = W * dpr; canvas.height = H * dpr; if (glReady) gl.viewport(0, 0, canvas.width, canvas.height);
-    // wide screens push the galaxy right of centre (a lens shift) to leave the introduction clear sky
-    const roomy = W > 1000;
-    home = { x: 0, z: 0, dist: roomy ? 2250 : W < 600 ? 2700 : 2400, yaw: .5, pitch: .6, ox: roomy ? .3 : 0, oy: roomy ? 0 : -.08 };
+    // the chart sits in the sky right of the project list (a lens shift, so nothing distorts)
+    const list = wide.matches && manifest ? manifest.offsetWidth : 0;
+    home = { x: 0, z: 0, dist: wide.matches ? 2350 : 3000, yaw: .5, pitch: .62, ox: list ? (list + (W - list) / 2) / W * 2 - 1 : 0, oy: wide.matches ? -.02 : .02 };
     if (first) Object.assign(cam, home); else if (current < 0 && !tween) { cam.ox = home.ox; cam.oy = home.oy; }
     wake();
   };
@@ -196,7 +200,7 @@ function init() {
   const wake = () => { if (!frame && visible && !document.hidden) { last = performance.now(); frame = requestAnimationFrame(step); } };
 
   // ------------------------------------------------------------ drawing
-  let lastWhere = '', lastTarget = null;
+  let lastWhere = '';
   const draw = () => {
     matrices();
     if (glReady) {
@@ -223,16 +227,9 @@ function init() {
       p.s = s;
     }
     view.toggleAttribute('data-near', near);
-    const cx = (cam.ox * .5 + .5) * W, cy = (1 - (cam.oy * .5 + .5)) * H;
-    reticle.style.left = `${cx}px`; reticle.style.top = `${cy}px`;
-    let target = null, best = 60;
-    if (!tween && current < 0 && section.classList.contains('is-flown')) for (const st of stars) { if (!st.s || st.el.style.visibility) continue; const d = Math.hypot(st.s[0] - cx, st.s[1] - cy); if (d < best) { best = d; target = st; } }
-    if (target !== lastTarget) {
-      lastTarget?.el.classList.remove('is-target'); target?.el.classList.add('is-target'); lastTarget = target;
-      section.classList.toggle('has-target', Boolean(target));
-      targetOut.textContent = target ? `${target.el.querySelector('.star__label').textContent} · ${G.labels.land}` : '';
-    }
-    const here = current >= 0 ? stars[current] : cam, where = locate(here.x, here.z);
+    let where;
+    if (current >= 0) where = tween ? `${G.labels.approaching} ${title(stars[current])}` : `${title(stars[current])} · ${locate(stars[current].x, stars[current].z)}`;
+    else where = Math.hypot(cam.x - home.x, cam.z - home.z) < 120 && cam.dist > 1500 ? G.labels.chart : locate(cam.x, cam.z);
     if (where !== lastWhere) { whereOut.textContent = where; lastWhere = where; }
     drawMinimap();
   };
@@ -270,17 +267,16 @@ function init() {
     mm.restore();
   };
 
-  // ------------------------------------------------------------ landing on a star = opening its world
-  const wide = matchMedia('(min-width: 861px)');
+  // ------------------------------------------------------------ landing on a planet = opening its project
   const lightZone = k => { for (const z of section.querySelectorAll('.galaxy__zone')) z.classList.toggle('is-lit', k != null && z.dataset.zone === String(k)); };
   const approach = i => {
     const s = stars[i];
     // park the star in the open sky beside the panel (desktop) or above it (phones)
     let ox = 0, oy = 0;
     const rect = view.getBoundingClientRect();
-    if (wide.matches) { const free = Math.min(rect.right, innerWidth - panel.offsetWidth - 24) - rect.left; ox = free / 2 / W * 2 - 1; }
+    if (wide.matches) { const free = Math.min(rect.right, innerWidth - panel.offsetWidth) - rect.left; ox = free / 2 / W * 2 - 1; }
     else { const top = Math.max(rect.top, 64), sheet = innerHeight - 8 - panel.offsetHeight, y = (top + Math.max(sheet, top + 80)) / 2 - rect.top; oy = 1 - y / H * 2; }
-    return { x: s.x, z: s.z, dist: 300, pitch: .42, yaw: Math.atan2(s.x, s.z) + .5, ox, oy };
+    return { x: s.x, z: s.z, dist: wide.matches ? 320 : 360, pitch: .38, yaw: Math.atan2(s.x, s.z) + .55, ox, oy };
   };
   const open = (i, { focus = true } = {}) => {
     const changed = i !== current;
@@ -288,9 +284,13 @@ function init() {
     stars.forEach((s, j) => s.el.classList.toggle('is-current', j === i));
     articles.forEach((a, j) => a.classList.toggle('is-open', j === i));
     section.classList.add('has-current');
+    panel.style.setProperty('--area', `var(--area-${stars[i].el.dataset.area})`);
+    items.forEach((it, j) => it?.setAttribute('aria-current', String(j === i)));
+    manifest?.classList.remove('is-open'); manifest?.querySelector('[data-manifest-toggle]')?.setAttribute('aria-expanded', 'false');
     if (changed) { replay(articles[i], 'is-entering'); replay(articles[i], 'is-fresh'); panel.scrollTop = 0; }
     panel.classList.add('is-open');
     count.textContent = `${String(i + 1).padStart(2, '0')} / ${stars.length}`;
+    whereOut.textContent = lastWhere = `${G.labels.approaching} ${title(stars[i])}`;
     lightZone(stars[i].el.dataset.zone);
     travel(approach(i));
     if (focus) articles[i].querySelector('h3').focus({ preventScroll: true });
@@ -301,10 +301,11 @@ function init() {
     current = -1;
     panel.classList.remove('is-open'); section.classList.remove('has-current');
     for (const s of stars) s.el.classList.remove('is-current');
+    for (const it of items) it?.removeAttribute('aria-current');
     lightZone(null);
-    travel({ ox: home.ox, oy: home.oy, dist: Math.max(cam.dist, 650), pitch: Math.max(cam.pitch, .55) });
+    travel(home);
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-    if (restore) back.focus({ preventScroll: true });
+    if (restore) (items[stars.findIndex(s => s.el === back)] || back).focus({ preventScroll: true });
   };
   const indexOf = h => { try { return stars.findIndex(s => `#${s.el.dataset.world}` === decodeURIComponent(h)); } catch { return -1; } };
   const go = (i, how = 'push') => { history[how === 'push' ? 'pushState' : 'replaceState'](null, '', `#${stars[i].el.dataset.world}`); open(i); };
@@ -351,24 +352,33 @@ function init() {
   view.addEventListener('pointercancel', release);
   for (const s of stars) s.el.addEventListener('click', event => { event.preventDefault(); if (event.detail === 0) go(stars.indexOf(s), current < 0 ? 'push' : 'replace'); });
   view.addEventListener('wheel', event => {
-    // plain scrolling keeps scrolling the page; pinch and Ctrl / ⌘ + scroll move closer
-    if (!event.ctrlKey && !event.metaKey) return;
+    // the flight deck is the whole page, so scrolling zooms
     event.preventDefault(); tween = null;
-    cam.dist *= Math.exp(event.deltaY * .01); clampCam(); touch(); wake();
+    cam.dist *= Math.exp(event.deltaY * (event.ctrlKey ? .01 : .0018)); clampCam(); touch(); wake();
   }, { passive: false });
   const KEYS = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right', q: 'turnL', Q: 'turnL', e: 'turnR', E: 'turnR', '+': 'in', '=': 'in', '-': 'out', _: 'out' };
   view.addEventListener('keydown', event => {
     if (event.target !== view && !event.target.classList.contains('star')) return;
     const k = KEYS[event.key];
     if (k) { event.preventDefault(); tween = null; keys.add(k); wake(); return; }
-    if (event.key === 'Enter' && event.target === view && lastTarget) { event.preventDefault(); go(stars.indexOf(lastTarget)); }
     if (event.key === 'Home' || event.key === '0') { event.preventDefault(); travel(home); }
   });
   view.addEventListener('keyup', event => { const k = KEYS[event.key]; if (k) keys.delete(k); });
   view.addEventListener('blur', () => keys.clear());
   view.addEventListener('focus', () => { touch(); wake(); });
   for (const b of section.querySelectorAll('[data-zoom]')) b.addEventListener('click', () => { touch(); travel({ dist: Math.min(LIM.dist[1], Math.max(LIM.dist[0], cam.dist * (b.dataset.zoom > 0 ? 1 / 1.8 : 1.8))) }); });
-  section.querySelector('[data-home]').addEventListener('click', () => { touch(); if (current >= 0) close({ restore: false }); travel(home); });
+  section.querySelector('[data-back]').addEventListener('click', () => close());
+  // the list and the chart are two views of one thing: pointing at either lights both
+  stars.forEach((s, i) => {
+    const it = items[i]; if (!it) return;
+    const hot = on => { s.el.classList.toggle('is-hot', on); it.classList.toggle('is-hot', on); };
+    it.addEventListener('pointerenter', () => hot(true)); it.addEventListener('pointerleave', () => hot(false));
+    it.addEventListener('focus', () => hot(true)); it.addEventListener('blur', () => hot(false));
+    s.el.addEventListener('pointerenter', () => hot(true)); s.el.addEventListener('pointerleave', () => hot(false));
+    it.addEventListener('click', event => { event.preventDefault(); hot(false); if (i === current) return; go(i, current < 0 ? 'push' : 'replace'); });
+  });
+  const toggle = manifest?.querySelector('[data-manifest-toggle]');
+  toggle?.addEventListener('click', () => { const open = !manifest.classList.contains('is-open'); manifest.classList.toggle('is-open', open); toggle.setAttribute('aria-expanded', String(open)); });
   minimap.addEventListener('click', event => {
     const r = minimap.getBoundingClientRect();
     const x = (event.clientX - r.left - r.width / 2) * (MM / r.width) / mmScale, z = (event.clientY - r.top - r.height / 2) * (MM / r.height) / mmScale;
@@ -383,14 +393,15 @@ function init() {
     if (d) { event.preventDefault(); go((current + d + stars.length) % stars.length, 'replace'); }
   });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && current >= 0 && !document.querySelector('dialog[open]')) close(); });
-  document.addEventListener('pointerdown', event => {
-    if (current >= 0 && !panel.contains(event.target) && !section.contains(event.target) && !event.target.closest('dialog, .nav')) close({ restore: false });
-  });
+  // links to a project from elsewhere on this page (answer sources) fly there too
+  const page = p => p.replace(/index\.html$/, '');
   document.addEventListener('click', event => {
-    const link = event.target.closest?.('a[href^="#"]');
-    if (!link || section.contains(link)) return;
-    const i = indexOf(link.hash);
-    if (i >= 0) { event.preventDefault(); section.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' }); go(i); }
+    const link = event.target.closest?.('a[href]');
+    if (!link || event.defaultPrevented || section.contains(link)) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin || page(url.pathname) !== page(location.pathname)) return;
+    const i = indexOf(url.hash);
+    if (i >= 0) { event.preventDefault(); go(i); }
   });
   addEventListener('popstate', () => { const i = indexOf(location.hash); if (i >= 0) open(i); else close({ restore: false }); });
   addEventListener('hashchange', () => { const i = indexOf(location.hash); if (i >= 0) open(i); });
@@ -402,9 +413,9 @@ function init() {
   resize();
   const landOnHash = () => { const i = indexOf(location.hash); if (i >= 0) open(i, { focus: false }); };
   if (root.classList.contains('is-landing') && !reduced) {
-    // a fresh visit starts far above the disc and swings down into it
-    Object.assign(cam, { ...home, dist: 7000, pitch: 1.42, yaw: home.yaw - 1.6 });
-    tween = { from: { ...cam }, to: { ...home }, start: performance.now() + 150, dur: 3000, lift: 0, done: () => { root.classList.remove('is-landing'); landOnHash(); } };
+    // a fresh visit settles onto the chart from a little higher and further round
+    Object.assign(cam, { ...home, dist: 4200, pitch: 1.15, yaw: home.yaw - .7 });
+    tween = { from: { ...cam }, to: { ...home }, start: performance.now() + 100, dur: 1800, lift: 0, done: () => { root.classList.remove('is-landing'); landOnHash(); } };
     wake();
   } else { root.classList.remove('is-landing'); landOnHash(); }
 }
