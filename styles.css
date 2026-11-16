@@ -240,12 +240,12 @@ body { overflow-x: clip; }
 .galaxy__arm { translate: -50% -50%; color: #ffd9c2b8; font: 17px/1.3 var(--font-editorial); letter-spacing: .01em; white-space: nowrap; text-shadow: 0 0 18px #000; }
 .galaxy__zone { translate: -50% -50%; color: #f4efe673; font: 13px/1.4 var(--font-outlier); white-space: nowrap; transition: color 200ms; }
 .galaxy__zone.is-lit { color: #f2a078; }
-.star { --size: 9px; position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; color: inherit; text-decoration: none; pointer-events: auto; transition: opacity 300ms; }
+.star { --size: 9px; --k: 1; position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; color: inherit; text-decoration: none; pointer-events: auto; transition: opacity 300ms; }
 .star--major { --size: 15px; }
-.star__body { position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, #fff 0 26%, #ffe6cf 48%, #ffd2b000 74%); box-shadow: 0 0 calc(var(--size) * 1.4) #ffd9be80; transition: scale 220ms cubic-bezier(.2, .7, .2, 1); }
+.star__body { --k: 1; position: absolute; left: 50%; top: 50%; width: calc(var(--size) * var(--k)); height: calc(var(--size) * var(--k)); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, #fff 0 26%, #ffe6cf 48%, #ffd2b000 74%); box-shadow: 0 0 calc(var(--size) * 1.4) #ffd9be80; transition: scale 220ms cubic-bezier(.2, .7, .2, 1); }
 .star--major .star__body { background: radial-gradient(circle, #fff 0 20%, #ffd3b6 40%, var(--color-brand) 64%, #d9775700 76%); box-shadow: 0 0 24px #d97757b3; }
 .star--ringed .star__body::after { content: ""; position: absolute; left: 50%; top: 50%; width: 230%; height: 62%; translate: -50% -50%; rotate: -22deg; border: 1.3px solid #ffe9d6a6; border-radius: 50%; }
-.star__label { position: absolute; left: 50%; top: calc(50% + var(--size) / 2 + 6px); translate: -50% 0; display: none; color: #f4efe6e0; font-size: 13px; line-height: 1.4; white-space: nowrap; text-shadow: 0 1px 10px #000, 0 0 2px #000; pointer-events: none; }
+.star__label { position: absolute; left: 50%; top: calc(50% + var(--size) * var(--k) / 2 + 6px); translate: -50% 0; display: none; color: #f4efe6e0; font-size: 13px; line-height: 1.4; white-space: nowrap; text-shadow: 0 1px 10px #000, 0 0 2px #000; pointer-events: none; }
 .star--major .star__label { display: block; color: #fff; font-weight: 500; }
 .galaxy__view[data-near] .star__label, .star:hover .star__label, .star:focus-visible .star__label, .star.is-target .star__label, .star.is-current .star__label { display: block; }
 .star:hover .star__body, .star:focus-visible .star__body, .star.is-target .star__body, .star.is-current .star__body { scale: 1.6; }
