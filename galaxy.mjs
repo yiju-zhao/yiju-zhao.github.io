@@ -29,6 +29,8 @@ function init() {
   const stars = placed.filter(p => p.el.classList.contains('star'));
   const articles = stars.map(s => document.getElementById(s.el.dataset.world));
   const whereOut = section.querySelector('[data-hud-where]');
+  const dial = section.querySelector('[data-heading]'), hdgOut = section.querySelector('[data-hdg]'), altOut = section.querySelector('[data-alt]'), pitchOut = section.querySelector('[data-pitch]');
+  const scanner = section.querySelector('[data-scanner]'), scan = { where: section.querySelector('[data-scan-where]'), title: section.querySelector('[data-scan-title]'), text: section.querySelector('[data-scan-text]') };
   const manifest = section.querySelector('[data-manifest]');
   const items = stars.map(s => manifest?.querySelector(`.manifest__item[data-world="${s.el.dataset.world}"]`));
   const title = s => s.el.querySelector('.star__label').textContent;
@@ -141,9 +143,8 @@ function init() {
     const rect = view.getBoundingClientRect(), first = W === 0;
     W = rect.width; H = rect.height; dpr = Math.min(devicePixelRatio || 1, 2);
     canvas.width = W * dpr; canvas.height = H * dpr; if (glReady) gl.viewport(0, 0, canvas.width, canvas.height);
-    // the chart sits in the sky right of the project list (a lens shift, so nothing distorts)
-    const list = wide.matches && manifest ? manifest.offsetWidth : 0;
-    home = { x: 0, z: 0, dist: wide.matches ? 2350 : 3000, yaw: .5, pitch: .62, ox: list ? (list + (W - list) / 2) / W * 2 - 1 : 0, oy: wide.matches ? -.02 : .02 };
+    // the windshield frames the chart; on phones the dash takes the bottom, so look a touch lower
+    home = { x: 0, z: 0, dist: wide.matches ? 2250 : 2900, yaw: .5, pitch: .62, ox: 0, oy: 0 };
     if (first) Object.assign(cam, home); else if (current < 0 && !tween) { cam.ox = home.ox; cam.oy = home.oy; }
     wake();
   };
@@ -201,6 +202,7 @@ function init() {
 
   // ------------------------------------------------------------ drawing
   let lastWhere = '';
+  const instruments = {};
   const draw = () => {
     matrices();
     if (glReady) {
@@ -231,6 +233,11 @@ function init() {
     if (current >= 0) where = tween ? `${G.labels.approaching} ${title(stars[current])}` : `${title(stars[current])} · ${locate(stars[current].x, stars[current].z)}`;
     else where = Math.hypot(cam.x - home.x, cam.z - home.z) < 120 && cam.dist > 1500 ? G.labels.chart : locate(cam.x, cam.z);
     if (where !== lastWhere) { whereOut.textContent = where; lastWhere = where; }
+    // instruments: heading turns the dial, altitude is the height above the disc
+    const hdg = Math.round(((-cam.yaw * 180 / Math.PI) % 360 + 360) % 360), alt = Math.round(cam.dist * Math.sin(cam.pitch)), pitch = Math.round(cam.pitch * 180 / Math.PI);
+    if (hdg !== instruments.hdg) { instruments.hdg = hdg; hdgOut.textContent = `${String(hdg).padStart(3, '0')}°`; dial?.setAttribute('transform', `rotate(${-hdg} 40 40)`); }
+    if (alt !== instruments.alt) { instruments.alt = alt; altOut.textContent = alt.toLocaleString(); }
+    if (pitch !== instruments.pitch) { instruments.pitch = pitch; pitchOut.textContent = `${pitch}°`; }
     drawMinimap();
   };
   const locate = (x, z) => {
@@ -274,8 +281,7 @@ function init() {
     // park the star in the open sky beside the panel (desktop) or above it (phones)
     let ox = 0, oy = 0;
     const rect = view.getBoundingClientRect();
-    if (wide.matches) { const free = Math.min(rect.right, innerWidth - panel.offsetWidth) - rect.left; ox = free / 2 / W * 2 - 1; }
-    else { const top = Math.max(rect.top, 64), sheet = innerHeight - 8 - panel.offsetHeight, y = (top + Math.max(sheet, top + 80)) / 2 - rect.top; oy = 1 - y / H * 2; }
+    if (!wide.matches) { const top = Math.max(rect.top, 64), sheet = innerHeight - 8 - panel.offsetHeight, y = (top + Math.max(sheet, top + 80)) / 2 - rect.top; oy = 1 - y / H * 2; }
     return { x: s.x, z: s.z, dist: wide.matches ? 320 : 360, pitch: .38, yaw: Math.atan2(s.x, s.z) + .55, ox, oy };
   };
   const open = (i, { focus = true } = {}) => {
@@ -371,12 +377,24 @@ function init() {
   // the list and the chart are two views of one thing: pointing at either lights both
   stars.forEach((s, i) => {
     const it = items[i]; if (!it) return;
-    const hot = on => { s.el.classList.toggle('is-hot', on); it.classList.toggle('is-hot', on); };
+    const hot = on => { s.el.classList.toggle('is-hot', on); it.classList.toggle('is-hot', on); scanFor(on ? i : -1); };
     it.addEventListener('pointerenter', () => hot(true)); it.addEventListener('pointerleave', () => hot(false));
     it.addEventListener('focus', () => hot(true)); it.addEventListener('blur', () => hot(false));
     s.el.addEventListener('pointerenter', () => hot(true)); s.el.addEventListener('pointerleave', () => hot(false));
     it.addEventListener('click', event => { event.preventDefault(); hot(false); if (i === current) return; go(i, current < 0 ? 'push' : 'replace'); });
   });
+  // the scanner reads a planet before you commit to flying there
+  let scanTimer = 0;
+  function scanFor(i) {
+    clearTimeout(scanTimer);
+    if (i < 0) { scanTimer = setTimeout(() => scanner?.classList.remove('is-scanning'), 160); return; }
+    const a = articles[i];
+    scan.where.textContent = a.querySelector('.world__where').textContent;
+    scan.title.textContent = title(stars[i]);
+    scan.text.textContent = a.querySelector('.world__lede').textContent;
+    scanner?.style.setProperty('--area', `var(--area-${stars[i].el.dataset.area})`);
+    scanner?.classList.add('is-scanning');
+  }
   const toggle = manifest?.querySelector('[data-manifest-toggle]');
   toggle?.addEventListener('click', () => { const open = !manifest.classList.contains('is-open'); manifest.classList.toggle('is-open', open); toggle.setAttribute('aria-expanded', String(open)); });
   minimap.addEventListener('click', event => {
@@ -406,6 +424,9 @@ function init() {
   addEventListener('popstate', () => { const i = indexOf(location.hash); if (i >= 0) open(i); else close({ restore: false }); });
   addEventListener('hashchange', () => { const i = indexOf(location.hash); if (i >= 0) open(i); });
   addEventListener('resize', resize);
+  // the windshield changes size when a console opens or closes
+  let sized = 0;
+  new ResizeObserver(() => { cancelAnimationFrame(sized); sized = requestAnimationFrame(() => { resize(); if (current >= 0 && !tween) { Object.assign(cam, approach(current), { yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist, x: cam.x, z: cam.z }); } }); }).observe(view);
   document.addEventListener('visibilitychange', wake);
   new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; wake(); }).observe(section);
 

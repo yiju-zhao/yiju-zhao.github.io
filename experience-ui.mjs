@@ -1,5 +1,6 @@
 export const ui = {
   en: {
+    scanner: 'Scanner', scanPrompt: 'Point at a planet, or at a project in the list, to scan it. Click to fly there.', scanGo: 'Click to fly there', dashNav: 'NAV', dashHeading: 'HDG', dashAltitude: 'ALT', dashPitch: 'PITCH',
     deck: 'Flight deck', aboutNav: 'About', aboutMore: 'About me, research and background', aboutTitle: 'About | Eason Zhao', aboutHeading: 'About Eason', deckLink: 'Explore the projects on the flight deck', skipList: 'Skip to the project list',
     legendColor: 'Colour is the area of work', legendDistance: 'Closer to the core is further along', legendRing: 'A ring means public code',
     chartHint: 'Drag to turn, scroll to zoom, click a planet to fly there.', back: 'Back to the chart', destination: 'Destination', chartWhere: 'Star chart', approaching: 'Approaching',
@@ -27,6 +28,7 @@ export const ui = {
     allProjects: 'More tools & experiments', jumpWork: 'Explore the work',
   },
   zh: {
+    scanner: '扫描仪', scanPrompt: '指向一颗星球，或清单里的一个项目，就能扫描它；点击即可飞往。', scanGo: '点击飞往', dashNav: '导航', dashHeading: '航向', dashAltitude: '高度', dashPitch: '俯仰',
     deck: '驾驶舱', aboutNav: '关于', aboutMore: '关于我、研究方向与经历', aboutTitle: '关于 | Eason Zhao', aboutHeading: '关于 Eason', deckLink: '去驾驶舱看看这些项目', skipList: '跳到项目清单',
     legendColor: '颜色代表方向', legendDistance: '离银心越近，进度越靠前', legendRing: '带环的有公开代码',
     chartHint: '拖动转向，滚轮缩放，点击星球前往。', back: '返回星图', destination: '目的地', chartWhere: '星图', approaching: '正在前往',

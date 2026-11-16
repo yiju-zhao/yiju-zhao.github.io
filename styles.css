@@ -228,13 +228,29 @@ details[open] > summary .expand::after { transform: rotate(90deg); }
 
 body { overflow-x: clip; }
 
-/* The flight deck: one screen, always dark. A project list on the left, the star chart
-   through the windshield, and on landing a split screen with the project beside its planet. */
-.deck-page { --area-agent: #e88c63; --area-research: #a3a4ff; --area-product: #76c8b1; --area-invest: #ebc36c; --area: var(--color-accent); --hud: #f4efe6b3; --hud-line: #ffffff24; overflow: hidden; height: 100svh; background: radial-gradient(ellipse 90% 80% at 62% 52%, #1a1518 0%, #0d0b0e 55%, #070608 100%); }
+/* The flight deck. You sit in a cockpit: the sky is only visible through the windshield,
+   the project list is the left console, the scanner the right one, and the instruments
+   run along the dash. Always dark, and every instrument reports something real. */
+@property --side-l { syntax: "<length>"; inherits: true; initial-value: 330px; }
+@property --side-r { syntax: "<length>"; inherits: true; initial-value: 300px; }
+.deck-page { --area-agent: #e88c63; --area-research: #a3a4ff; --area-product: #76c8b1; --area-invest: #ebc36c; --area: var(--color-accent); --hud: #f4efe6b3; --hud-dim: #f4efe673; --hud-line: #ffffff1c; --hull: #121015; overflow: hidden; height: 100svh; background: #09080b; }
 .deck-page .field { display: none; }
-.nav--deck { position: fixed; inset: 0 0 auto; z-index: 20; min-height: 64px; padding-inline: 28px; border-bottom: 1px solid var(--hud-line); background: #0b0a0dcc; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.nav--deck { position: fixed; inset: 0 0 auto; z-index: 20; min-height: 56px; padding-inline: 24px; border-bottom: 1px solid var(--hud-line); background: #0b0a0d; }
 .nav--deck .nav__sections a[aria-current="page"] { color: var(--color-ink); }
-.deck { position: fixed; inset: 64px 0 0; color: var(--color-ink); }
+.deck { --gap: 14px; --dash: 104px; position: fixed; inset: 56px 0 0; color: var(--color-ink); background: radial-gradient(ellipse 70% 60% at 50% 40%, #17141a, var(--hull) 60%, #0b0a0d), var(--hull); transition: --side-l 650ms cubic-bezier(.2, .7, .2, 1), --side-r 650ms cubic-bezier(.2, .7, .2, 1); }
+.deck::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #ffffff04 0 1px, transparent 1px 96px), repeating-linear-gradient(0deg, #ffffff03 0 1px, transparent 1px 96px); pointer-events: none; }
+.deck.has-current { --side-l: 0px; --side-r: min(46vw, 760px); }
+
+/* The windshield */
+.viewport { position: absolute; z-index: 1; top: var(--gap); bottom: calc(var(--dash) + var(--gap) * 2); left: calc(var(--side-l) + var(--gap) * 2); right: calc(var(--side-r) + var(--gap) * 2); overflow: hidden; isolation: isolate; border-radius: 72px 72px 26px 26px / 96px 96px 26px 26px; background: radial-gradient(ellipse 90% 80% at 50% 50%, #1a1518 0%, #0d0b0e 58%, #070608 100%); box-shadow: 0 0 0 1px #ffffff1f, 0 0 0 7px #19171c, 0 0 0 8px #ffffff12, 0 24px 60px #000b; }
+.viewport::after { content: ""; position: absolute; z-index: 4; top: 0; left: 50%; width: 12px; height: 30px; translate: -50% 0; border-radius: 0 0 5px 5px; background: linear-gradient(#1d1b21, #121015); box-shadow: 0 1px 0 #ffffff12; pointer-events: none; }
+.viewport__glass { position: absolute; z-index: 3; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(116deg, transparent 0 36%, #ffffff06 43%, transparent 50%); box-shadow: inset 0 0 140px #000d, inset 0 0 0 1px #ffffff12; }
+.viewport__glass::before { content: ""; position: absolute; inset: 56px 44px 30px; border: 1px solid #f4efe640; border-radius: 4px; -webkit-mask: linear-gradient(#000 0 0) 0 0 / 22px 22px no-repeat, linear-gradient(#000 0 0) 100% 0 / 22px 22px no-repeat, linear-gradient(#000 0 0) 0 100% / 22px 22px no-repeat, linear-gradient(#000 0 0) 100% 100% / 22px 22px no-repeat; mask: linear-gradient(#000 0 0) 0 0 / 22px 22px no-repeat, linear-gradient(#000 0 0) 100% 0 / 22px 22px no-repeat, linear-gradient(#000 0 0) 0 100% / 22px 22px no-repeat, linear-gradient(#000 0 0) 100% 100% / 22px 22px no-repeat; }
+.viewport__marker { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; translate: -50% -50%; border: 1px solid #f4efe633; border-radius: 50%; transition: opacity 400ms; }
+.viewport__marker::before, .viewport__marker::after { content: ""; position: absolute; top: 50%; width: 14px; height: 1px; background: #f4efe633; }
+.viewport__marker::before { right: calc(100% + 4px); } .viewport__marker::after { left: calc(100% + 4px); }
+.deck.has-current .viewport__marker { opacity: 0; }
+
 .galaxy__view { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; user-select: none; -webkit-user-select: none; }
 .galaxy__view.is-dragging { cursor: grabbing; }
 .galaxy__view:focus-visible { box-shadow: inset 0 0 0 2px var(--color-brand); }
@@ -264,54 +280,82 @@ body { overflow-x: clip; }
 .star.is-current .star__body { width: clamp(110px, 13vw, 170px); height: clamp(110px, 13vw, 170px); scale: 1; background: radial-gradient(circle at 34% 30%, #ffffffd9 0, color-mix(in srgb, var(--area) 60%, #fff) 10%, var(--area) 42%, color-mix(in srgb, var(--area) 45%, #000) 78%, color-mix(in srgb, var(--area) 20%, #000) 100%); box-shadow: 0 0 80px color-mix(in srgb, var(--area) 38%, transparent), inset -16px -12px 36px #0009; }
 .star.is-current .star__label { top: calc(50% + clamp(110px, 13vw, 170px) / 2 + 22px); font: 500 15px/1.4 var(--font-body); }
 
-/* The list: who this is, then every project, grouped the way the chart is. */
-.manifest { position: absolute; z-index: 5; inset: 0 auto 0 0; display: flex; flex-direction: column; width: 340px; padding: 30px 28px 22px; overflow-y: auto; overscroll-behavior: contain; border-right: 1px solid var(--hud-line); background: linear-gradient(90deg, #0b0a0df2, #0b0a0dc7); transition: translate 600ms cubic-bezier(.2, .7, .2, 1); scrollbar-width: thin; }
-.deck.has-current .manifest { translate: -100% 0; }
-.manifest h1 { color: #fff; font-size: 44px; line-height: 1.05; }
+/* Consoles: two screens angled toward the pilot. */
+.console { position: absolute; z-index: 2; top: var(--gap); bottom: calc(var(--dash) + var(--gap) * 2); overflow-y: auto; overscroll-behavior: contain; border: 1px solid #ffffff17; border-radius: 16px; background: linear-gradient(180deg, #18161b, #100f13); box-shadow: inset 0 1px 0 #ffffff14, inset 0 0 0 5px #0b0a0d, inset 0 0 0 6px #ffffff0a, 0 20px 44px #000a; scrollbar-width: thin; transition: translate 650ms cubic-bezier(.2, .7, .2, 1), opacity 450ms; }
+.console__label { display: flex; align-items: center; gap: 8px; color: var(--hud-dim); font: 13px/1.6 var(--font-outlier); letter-spacing: .12em; text-transform: uppercase; }
+.console__label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #7fd39b; box-shadow: 0 0 8px #7fd39b; }
+.console--left { left: var(--gap); width: 330px; padding: 26px 24px 20px; transform: perspective(1700px) rotateY(5deg); transform-origin: left center; display: flex; flex-direction: column; }
+.console--right { right: var(--gap); width: 300px; padding: 22px 22px 20px; transform: perspective(1700px) rotateY(-5deg); transform-origin: right center; }
+.deck.has-current .console--left { translate: calc(-100% - 30px) 0; opacity: 0; }
+.deck.has-current .console--right { translate: 30px 0; opacity: 0; pointer-events: none; }
+
+/* Left console: who this is, then every project, grouped the way the chart is. */
+.manifest h1 { color: #fff; font-size: 40px; line-height: 1.05; }
 .manifest__role { margin-top: 10px; color: var(--hud); font-size: 13px; }
-.manifest__lede { margin-top: 14px; color: var(--color-ink); font: 19px/1.45 var(--font-editorial); letter-spacing: -.015em; }
+.manifest__lede { margin-top: 12px; color: var(--color-ink); font: 18px/1.45 var(--font-editorial); letter-spacing: -.015em; }
 .manifest__toggle { display: none; }
-.manifest__count { margin: 26px 0 6px; color: var(--hud); font: 13px/1.6 var(--font-outlier); }
+.manifest__count { margin: 22px 0 6px; color: var(--hud-dim); font: 13px/1.6 var(--font-outlier); }
 .manifest__area { padding-block: 12px 4px; border-top: 1px solid var(--hud-line); }
 .manifest__area h2 { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; color: color-mix(in srgb, var(--area) 75%, #fff); font: 500 15px/1.6 var(--font-body); }
 .manifest__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--area); box-shadow: 0 0 10px var(--area); }
-.manifest__n { margin-left: auto; color: var(--hud); font: 13px var(--font-outlier); }
+.manifest__n { margin-left: auto; color: var(--hud-dim); font: 13px var(--font-outlier); }
 .manifest__item { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-inline: -8px; padding: 5px 8px; border-radius: 6px; color: #f4efe6c7; font-size: 14px; text-decoration: none; transition: background 140ms, color 140ms; }
 .manifest__item.is-major { color: #fff; font-weight: 500; }
-.manifest__item:hover, .manifest__item.is-hot, .manifest__item[aria-current="true"] { background: color-mix(in srgb, var(--area) 16%, transparent); color: #fff; }
+.manifest__item:hover, .manifest__item.is-hot, .manifest__item[aria-current="true"] { background: color-mix(in srgb, var(--area) 18%, transparent); color: #fff; }
 .manifest__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .manifest__stage { flex-shrink: 0; color: #f4efe680; font-size: 13px; font-weight: 400; }
-.manifest__foot { margin-top: auto; padding-top: 22px; }
+.manifest__foot { margin-top: auto; padding-top: 20px; }
 .manifest__about { color: var(--color-ink); font-size: 14px; text-decoration: none; }
 .manifest__foot .contact-links { gap: 6px 16px; margin-top: 10px; }
 .manifest__foot .contact-links a { color: var(--hud); font-size: 13px; }
 
-/* Instruments over the windshield: kept to the corners, quiet until needed. */
-.viewport { position: absolute; z-index: 1; inset: 0; isolation: isolate; }
-.viewport__where { position: absolute; z-index: 4; top: 20px; left: 368px; color: var(--hud); font: 13px/1.6 var(--font-outlier); transition: left 600ms cubic-bezier(.2, .7, .2, 1); pointer-events: none; }
-.deck.has-current .viewport__where { left: 28px; top: 70px; }
-.legend { position: absolute; z-index: 4; left: 368px; bottom: 22px; display: flex; flex-wrap: wrap; gap: 6px 24px; max-width: calc(100% - 460px); color: var(--hud); font-size: 13px; pointer-events: none; transition: opacity 400ms; }
-.legend > span { display: inline-flex; align-items: center; gap: 8px; }
+/* Right console: the scanner reads whatever you point at, before you fly. */
+.scanner__idle, .scanner__target { margin-top: 18px; }
+.scanner__target { display: none; }
+.scanner.is-scanning .scanner__idle { display: none; }
+.scanner.is-scanning .scanner__target { display: block; animation: scan-in 260ms ease; }
+.scanner__prompt { color: var(--color-ink); font: 18px/1.5 var(--font-editorial); letter-spacing: -.01em; }
+.legend { display: grid; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--hud-line); color: var(--hud); font-size: 14px; line-height: 1.5; }
+.legend li { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px; }
 .legend__hues { display: inline-flex; gap: 3px; }
 .legend__hues i { width: 7px; height: 7px; border-radius: 50%; background: var(--area); }
-.legend__orbits { width: 16px; height: 9px; border: 1px solid #f4efe680; border-radius: 50%; box-shadow: inset 0 0 0 3px #0000, 0 0 0 3px #0b0a0d, 0 0 0 4px #f4efe640; }
-.legend__ring { width: 16px; height: 6px; border: 1.5px solid #f4efe6b3; border-radius: 50%; rotate: -20deg; }
-.viewport__hint { position: absolute; z-index: 4; top: 44px; left: 368px; color: #f4efe680; font-size: 13px; transition: opacity 600ms; pointer-events: none; }
-.deck.is-flown .viewport__hint, .deck.has-current .legend, .deck.has-current .viewport__hint { opacity: 0; }
-.viewport__controls { position: absolute; z-index: 4; right: 22px; bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-.viewport__controls button, .viewport__back { min-width: 38px; height: 38px; border: 1px solid var(--hud-line); border-radius: 999px; background: #0d0b0eb3; color: var(--color-ink); font-size: 18px; line-height: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: border-color 140ms; }
-.viewport__controls button:hover, .viewport__back:hover { border-color: #ffffff73; }
-.deck.has-current .viewport__controls { right: calc(min(48vw, 780px) + 22px); }
-.viewport__back { position: absolute; z-index: 6; top: 20px; left: 22px; padding: 0 16px 0 13px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 400ms 300ms; }
-.deck.has-current .viewport__back { opacity: 1; pointer-events: auto; }
-.galaxy__minimap { position: absolute; z-index: 4; left: 22px; bottom: 22px; width: 116px; height: 116px; border: 1px solid var(--hud-line); border-radius: 50%; background: #0806098c; cursor: crosshair; opacity: 0; pointer-events: none; transition: opacity 400ms; }
-.deck.has-current .galaxy__minimap { opacity: 1; pointer-events: auto; }
+.legend__orbits { width: 26px; height: 14px; border: 1px solid #f4efe680; border-radius: 50%; box-shadow: 0 0 0 4px var(--hull), 0 0 0 5px #f4efe640; }
+.legend__ring { width: 22px; height: 8px; border: 1.5px solid #f4efe6b3; border-radius: 50%; rotate: -20deg; }
+.scanner__where { display: flex; align-items: center; gap: 8px; color: var(--hud); font-size: 13px; }
+.scanner__where::before { content: ""; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: var(--area); box-shadow: 0 0 10px var(--area); }
+.scanner__title { margin-top: 10px; color: #fff; font: 500 28px/1.15 var(--font-display); letter-spacing: -.04em; overflow-wrap: anywhere; }
+.scanner__text { margin-top: 12px; color: var(--color-ink-2); font-size: 15px; line-height: 1.7; }
+.scanner__go { margin-top: 16px; color: color-mix(in srgb, var(--area) 75%, #fff); font: 13px var(--font-outlier); }
+@keyframes scan-in { from { opacity: 0; translate: 0 4px; } }
+
+/* The dash: instruments along the bottom. */
+.dash { position: absolute; z-index: 2; left: var(--gap); right: var(--gap); bottom: var(--gap); height: var(--dash); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 28px; padding: 0 24px; border: 1px solid #ffffff17; border-radius: 18px; background: linear-gradient(180deg, #1a181d, #0e0d11); box-shadow: inset 0 1px 0 #ffffff17, inset 0 0 0 5px #0b0a0d, inset 0 0 0 6px #ffffff0a; }
+.dash__label, .readouts span, .dial p span { color: var(--hud-dim); font: 13px/1.4 var(--font-outlier); letter-spacing: .1em; }
+.dash__where { margin-top: 4px; overflow: hidden; color: var(--color-ink); font: 14px/1.5 var(--font-outlier); text-overflow: ellipsis; white-space: nowrap; }
+.dash__instruments { display: flex; align-items: center; gap: 26px; }
+.dial { display: flex; align-items: center; gap: 12px; }
+.dial svg { width: 74px; height: 74px; border-radius: 50%; background: radial-gradient(circle, #0b0a0d 60%, #141217); box-shadow: inset 0 0 0 1px #ffffff1a; }
+.dial__ticks line { stroke: #f4efe659; stroke-width: 1; }
+.dial__north { fill: var(--color-brand); }
+.dial__index { stroke: #f4efe6; stroke-width: 1.5; }
+.dial p, .readouts p { display: grid; gap: 2px; }
+.dial b, .readouts b { color: var(--color-ink); font: 500 15px/1.3 var(--font-outlier); }
+.readouts { display: grid; gap: 8px; }
+.deck .galaxy__minimap { position: static; width: 84px; height: 84px; border: 1px solid #ffffff1f; border-radius: 50%; background: #060508; box-shadow: inset 0 0 18px #000; cursor: crosshair; }
+.dash__controls { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+.dash__back { height: 38px; padding: 0 16px 0 13px; border: 1px solid var(--hud-line); border-radius: 999px; background: #0d0b0e; color: var(--color-ink); font-size: 14px; opacity: .35; pointer-events: none; transition: opacity 300ms, border-color 140ms; }
+.deck.has-current .dash__back { opacity: 1; pointer-events: auto; border-color: color-mix(in srgb, var(--area) 60%, transparent); }
+.rocker { display: grid; overflow: hidden; border: 1px solid var(--hud-line); border-radius: 10px; }
+.rocker button { width: 38px; height: 30px; border: 0; background: #0d0b0e; color: var(--color-ink); font-size: 17px; line-height: 1; }
+.rocker button + button { border-top: 1px solid var(--hud-line); }
+.rocker button:hover, .dash__back:hover { background: #1b191f; }
 @media (prefers-reduced-motion: no-preference) {
   .is-landing .star, .is-landing .galaxy__arm, .is-landing .galaxy__zone { animation: fade-in 700ms ease 1000ms backwards; }
-  .is-landing .manifest { animation: manifest-in 900ms cubic-bezier(.2, .7, .2, 1) 200ms backwards; }
+  .is-landing .console, .is-landing .dash { animation: console-in 900ms cubic-bezier(.2, .7, .2, 1) 150ms backwards; }
+  .is-landing .viewport { animation: fade-in 900ms ease backwards; }
 }
 @keyframes fade-in { from { opacity: 0; } }
-@keyframes manifest-in { from { opacity: 0; translate: -24px 0; } }
+@keyframes console-in { from { opacity: 0; translate: 0 14px; } }
 
 /* About: the long-form page, following the reader's theme. */
 .about-hero { max-width: 760px; padding-block: 72px 64px; }
@@ -337,11 +381,11 @@ body { overflow-x: clip; }
 .world__diagram figcaption { min-height: 1.7em; margin-top: 14px; color: var(--color-muted); font-size: 13px; text-align: center; }
 .world__links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 20px; }
 .world__links a { color: var(--color-accent); font-size: 14px; text-decoration: none; }
-.js .worlds { position: fixed; z-index: 15; top: 64px; right: 0; bottom: 0; width: min(48vw, 780px); padding: 0 44px 40px; overflow-y: auto; overscroll-behavior: contain; border-left: 1px solid var(--hud-line, var(--color-rule)); background: #121013; translate: 100% 0; visibility: hidden; transition: translate 640ms cubic-bezier(.2, .7, .2, 1), visibility 0s 640ms; scrollbar-width: thin; }
-.js .worlds::before { content: ""; position: sticky; top: 0; z-index: 2; display: block; height: 3px; margin-inline: -44px; background: var(--area, var(--color-accent)); }
-.js .worlds.is-open { translate: 0 0; visibility: visible; transition: translate 640ms cubic-bezier(.2, .7, .2, 1) 120ms; }
+.js .worlds { position: absolute; z-index: 5; top: var(--gap); right: var(--gap); bottom: calc(var(--dash) + var(--gap) * 2); width: var(--side-r); padding: 0 40px 36px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #ffffff17; border-radius: 16px; background: linear-gradient(180deg, #19171c, #121014); box-shadow: inset 0 1px 0 #ffffff14, 0 20px 44px #000a; translate: calc(100% + 40px) 0; visibility: hidden; transition: translate 650ms cubic-bezier(.2, .7, .2, 1), visibility 0s 650ms; scrollbar-width: thin; }
+.js .worlds::before { content: ""; position: sticky; top: 0; z-index: 2; display: block; height: 3px; margin-inline: -40px; background: var(--area, var(--color-accent)); box-shadow: 0 0 18px var(--area, var(--color-accent)); }
+.js .worlds.is-open { translate: 0 0; visibility: visible; transition: translate 650ms cubic-bezier(.2, .7, .2, 1) 80ms; }
 .js .worlds__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.js .worlds__bar { position: sticky; top: 3px; z-index: 1; background: #121013; display: flex; align-items: center; gap: 8px; padding: 18px 0 14px; border-bottom: 1px solid var(--hud-line, var(--color-rule)); }
+.js .worlds__bar { position: sticky; top: 3px; z-index: 1; background: #19171c; display: flex; align-items: center; gap: 8px; padding: 18px 0 14px; border-bottom: 1px solid var(--hud-line, var(--color-rule)); }
 .worlds__count { margin-right: auto; color: var(--color-muted); font: 13px var(--font-outlier); }
 .worlds__step { width: 36px; height: 36px; border: 1px solid var(--color-rule); border-radius: 50%; background: transparent; color: var(--color-ink-2); font-size: 16px; line-height: 1; transition: border-color 140ms, color 140ms; }
 .worlds__step:hover { border-color: var(--color-rule-2); color: var(--color-ink); }
@@ -360,27 +404,28 @@ body { overflow-x: clip; }
 @media (max-width: 760px) {
   .worlds__list { grid-template-columns: minmax(0, 1fr); }
   .nav--deck { padding-inline: 16px; min-height: 56px; flex-wrap: nowrap; padding-block: 0; }
-  .deck { top: 56px; }
-  .js .worlds { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 70svh; padding: 0 20px 24px; border-left: 0; border-top: 1px solid var(--hud-line); border-radius: 16px 16px 0 0; translate: 0 100%; }
+  .deck { --gap: 8px; --dash: 62px; --side-l: 0px; --side-r: 0px; }
+  .deck.has-current { --side-l: 0px; --side-r: 0px; }
+  .viewport { border-radius: 30px 30px 14px 14px / 40px 40px 14px 14px; }
+  .viewport__glass::before { inset: 76px 18px 64px; }
+  .js .worlds { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 70svh; padding: 0 20px 24px; border-radius: 16px 16px 0 0; translate: 0 100%; }
   .js .worlds::before { margin-inline: -20px; }
-  .manifest { inset: 0; width: auto; padding: 0; overflow: visible; border: 0; background: none; pointer-events: none; }
-  .deck.has-current .manifest { translate: none; opacity: 0; }
-  .manifest__intro { position: absolute; top: 16px; left: 16px; right: 16px; }
-  .manifest h1 { font-size: 34px; }
+  .console--right { display: none; }
+  .manifest { inset: var(--gap) var(--gap) calc(var(--dash) + var(--gap) * 2); width: auto; padding: 0; overflow: visible; border: 0; border-radius: 0; background: none; box-shadow: none; transform: none; pointer-events: none; }
+  .deck.has-current .console--left { translate: none; opacity: 0; }
+  .manifest__intro { position: absolute; top: 18px; left: 22px; right: 22px; }
+  .manifest h1 { font-size: 32px; }
   .manifest__lede { display: none; }
-  .manifest__toggle { position: absolute; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border: 1px solid var(--hud-line); border-radius: 999px; background: #0d0b0ed9; color: var(--color-ink); font-size: 14px; pointer-events: auto; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .manifest__toggle { position: absolute; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 12px; padding: 9px 15px; border: 1px solid var(--hud-line); border-radius: 999px; background: #0d0b0ee6; color: var(--color-ink); font-size: 14px; pointer-events: auto; }
   .manifest.is-open .manifest__toggle .expand::after { transform: rotate(90deg); }
-  .manifest__list { position: absolute; left: 8px; right: 8px; bottom: 66px; max-height: 62svh; padding: 4px 18px 12px; overflow-y: auto; border: 1px solid var(--hud-line); border-radius: 14px; background: #0d0b0ef5; pointer-events: auto; opacity: 0; visibility: hidden; translate: 0 12px; transition: opacity 240ms, translate 240ms, visibility 0s 240ms; }
+  .manifest__list { position: absolute; left: 4px; right: 4px; bottom: 58px; max-height: 58svh; padding: 4px 18px 12px; overflow-y: auto; border: 1px solid var(--hud-line); border-radius: 14px; background: #121014f7; pointer-events: auto; opacity: 0; visibility: hidden; translate: 0 12px; transition: opacity 240ms, translate 240ms, visibility 0s 240ms; }
   .manifest.is-open .manifest__list { opacity: 1; visibility: visible; translate: 0 0; transition: opacity 240ms, translate 240ms; }
-  .manifest__count { display: none; }
-  .manifest__foot { display: none; }
-  .viewport__where { left: 16px; top: auto; bottom: 70px; }
-  .deck.has-current .viewport__where { top: 66px; left: 16px; bottom: auto; }
-  .legend, .viewport__hint { display: none; }
-  .viewport__controls { right: 14px; bottom: 14px; }
-  .deck.has-current .viewport__controls { display: none; }
-  .viewport__back { top: 14px; left: 14px; }
-  .galaxy__minimap { display: none; }
+  .manifest__count, .manifest__foot { display: none; }
+  .dash { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 0 12px 0 16px; border-radius: 14px; }
+  .dash__instruments .dial, .dash__instruments .readouts { display: none; }
+  .deck .galaxy__minimap { width: 44px; height: 44px; }
+  .dash__instruments { gap: 10px; }
+  .dash__controls { display: none; }
   .star.is-current .star__body { width: 96px; height: 96px; }
   .star.is-current .star__label { top: calc(50% + 48px + 14px); }
   .galaxy__arm { font-size: 14px; }

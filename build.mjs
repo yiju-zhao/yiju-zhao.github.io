@@ -676,20 +676,32 @@ function buildPage(lang) {
     const members = worlds.filter((w) => w.group === id);
     return `<section class="manifest__area" style="--area:var(--area-${id})" aria-labelledby="area-${id}"><h2 id="area-${id}"><span class="manifest__dot" aria-hidden="true"></span>${esc(text.groupNames[id])}<span class="manifest__n">${members.length}</span></h2><ol>${members.map((w) => `<li><a class="manifest__item${majors.includes(w.slug) ? ' is-major' : ''}" href="#${w.slug}" data-world="${w.slug}"><span class="manifest__name">${esc(told.get(w.slug).title)}</span><span class="manifest__stage" data-zone="${w.ring}">${esc(u.stages[w.ring])}</span></a></li>`).join('')}</ol></section>`;
   }).join('\n');
+  // the windshield: only the sky lives here; instruments sit on the consoles and the dash
   const viewport = `<section class="viewport" aria-label="${esc(u.mapLabel)}">
-<div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}" aria-describedby="deck-hint">
+<div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}">
 <div class="galaxy__layer" data-layer>
 ${Object.entries(GALAXY.armLabels).map(([id, [x, y]]) => `<span class="galaxy__arm" data-wx="${x}" data-wy="${y}" style="${fallback(x, y)};--area:var(--area-${id})" aria-hidden="true">${esc(text.groupNames[id])}</span>`).join('')}
 ${GALAXY.zones.map((z, k) => `<span class="galaxy__zone" data-zone="${k}" data-wx="0" data-wy="${-Math.round(z * GALAXY.R)}" style="${fallback(0, -z * GALAXY.R)}" aria-hidden="true">${esc(u.stages[k])}</span>`).join('')}
 ${worlds.map(star).join('\n')}
 </div></div>
-<p class="viewport__where" data-hud-where></p>
-<canvas class="galaxy__minimap" data-minimap width="132" height="132" aria-hidden="true"></canvas>
-<p class="legend"><span><span class="legend__hues" aria-hidden="true">${areas.map((id) => `<i style="--area:var(--area-${id})"></i>`).join('')}</span>${esc(u.legendColor)}</span><span><span class="legend__orbits" aria-hidden="true"></span>${esc(u.legendDistance)}</span><span><span class="legend__ring" aria-hidden="true"></span>${esc(u.legendRing)}</span></p>
-<p class="viewport__hint" id="deck-hint">${esc(u.chartHint)}</p>
-<div class="viewport__controls"><button type="button" data-zoom="-1" aria-label="${esc(u.zoomOut)}">−</button><button type="button" data-zoom="1" aria-label="${esc(u.zoomIn)}">+</button></div>
-<button class="viewport__back" type="button" data-back><span aria-hidden="true">←</span> ${esc(u.back)}</button>
+<div class="viewport__glass" aria-hidden="true"><span class="viewport__marker"></span></div>
 </section>`;
+  const legend = `<ul class="legend"><li><span class="legend__hues" aria-hidden="true">${areas.map((id) => `<i style="--area:var(--area-${id})"></i>`).join('')}</span>${esc(u.legendColor)}</li><li><span class="legend__orbits" aria-hidden="true"></span>${esc(u.legendDistance)}</li><li><span class="legend__ring" aria-hidden="true"></span>${esc(u.legendRing)}</li></ul>`;
+  const scanner = `<aside class="console console--right scanner" aria-labelledby="scanner-h" data-scanner>
+<p class="console__label" id="scanner-h">${esc(u.scanner)}</p>
+<div class="scanner__idle"><p class="scanner__prompt">${esc(u.scanPrompt)}</p>${legend}</div>
+<div class="scanner__target" data-scan aria-live="polite"><p class="scanner__where" data-scan-where></p><p class="scanner__title" data-scan-title></p><p class="scanner__text" data-scan-text></p><p class="scanner__go">${esc(u.scanGo)}</p></div>
+</aside>`;
+  const ticks = Array.from({ length: 36 }, (_, i) => { const a = i * 10 * Math.PI / 180, r1 = i % 9 === 0 ? 30 : i % 3 === 0 ? 33 : 35; return `<line x1="${(40 + r1 * Math.sin(a)).toFixed(1)}" y1="${(40 - r1 * Math.cos(a)).toFixed(1)}" x2="${(40 + 38 * Math.sin(a)).toFixed(1)}" y2="${(40 - 38 * Math.cos(a)).toFixed(1)}"/>`; }).join('');
+  const dash = `<div class="dash">
+<div class="dash__nav"><p class="dash__label">${esc(u.dashNav)}</p><p class="dash__where" data-hud-where></p></div>
+<div class="dash__instruments" aria-hidden="true">
+<div class="dial"><svg viewBox="0 0 80 80"><g class="dial__ticks" data-heading>${ticks}<path class="dial__north" d="M40 4 L43 11 L37 11 Z"/></g><path class="dial__index" d="M40 1 v8"/></svg><p><span>${esc(u.dashHeading)}</span> <b data-hdg>000°</b></p></div>
+<canvas class="galaxy__minimap" data-minimap width="132" height="132"></canvas>
+<div class="readouts"><p><span>${esc(u.dashAltitude)}</span><b data-alt>0</b></p><p><span>${esc(u.dashPitch)}</span><b data-pitch>0°</b></p></div>
+</div>
+<div class="dash__controls"><button class="dash__back" type="button" data-back><span aria-hidden="true">←</span> ${esc(u.back)}</button><div class="rocker"><button type="button" data-zoom="1" aria-label="${esc(u.zoomIn)}">+</button><button type="button" data-zoom="-1" aria-label="${esc(u.zoomOut)}">−</button></div></div>
+</div>`;
 
   const world = (w) => {
     const d = told.get(w.slug);
@@ -727,7 +739,7 @@ ${dialog}
   const deck = shell('deck', text.title, `<a class="skip" href="#manifest">${esc(u.skipList)}</a>
 ${nav('deck')}
 <main id="main" class="deck" data-galaxy="${esc(JSON.stringify(config))}">
-<aside class="manifest" id="manifest" aria-labelledby="name" data-manifest>
+<aside class="console console--left manifest" id="manifest" aria-labelledby="name" data-manifest>
 <div class="manifest__intro"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="manifest__role">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="manifest__lede">${text.intro}</p></div>
 <button class="manifest__toggle" type="button" data-manifest-toggle aria-expanded="false" aria-controls="manifest-list"><span>${esc(countLine)}</span><span class="expand" aria-hidden="true"></span></button>
 <div class="manifest__list" id="manifest-list"><p class="manifest__count">${esc(countLine)}</p>
@@ -735,7 +747,9 @@ ${manifest}</div>
 <div class="manifest__foot"><a class="manifest__about" href="${about}">${esc(u.aboutMore)} <span aria-hidden="true">→</span></a><div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></div>
 </aside>
 ${viewport}
+${scanner}
 <section class="worlds" id="worlds" data-worlds aria-labelledby="worlds-h"><div class="worlds__bar"><span class="worlds__count"><span>${esc(u.destination)}</span> <span data-world-count></span></span><button class="worlds__step" type="button" data-step="-1" aria-label="${esc(u.prev)}">←</button><button class="worlds__step" type="button" data-step="1" aria-label="${esc(u.next)}">→</button><button class="worlds__step" type="button" data-close-world aria-label="${esc(u.back)}">×</button></div><h2 class="worlds__title" id="worlds-h">${esc(u.worldsTitle)}</h2><div class="worlds__list">${worlds.map(world).join('\n')}</div></section>
+${dash}
 </main>`);
 
   const toProject = (href) => href.startsWith('#') ? `${home}${href}` : href;
