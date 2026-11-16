@@ -1,6 +1,5 @@
 // Stars behind the page. Nearer stars shift more with the pointer and with scrolling,
-// so moving through the page reads as moving through space. A fresh visit or reload
-// plays one short jump. Nothing runs while the view is at rest.
+// so moving through the page reads as moving through space. Nothing runs at rest.
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const root = document.documentElement;
 const JUMP = 1100; // ms

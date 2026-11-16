@@ -1,7 +1,8 @@
 export const ui = {
   en: {
-    map: 'Map', mapLabel: 'Project map', mapLead: 'Every world here is a project. The closer to the center, the further along it is. Ringed worlds have public code.',
-    mapHint: 'Choose a world to land on it.', stages: ['Public', 'Validating', 'Building', 'Exploring'],
+    map: 'Map', mapLabel: 'Project galaxy. Use the arrow keys to fly and Enter to land on the star in the sights.', mapLead: 'Each star is a project. The four spiral arms are areas of work, and the closer a star is to the core, the further along it is. Stars with an orbit ring have public code.',
+    flyHint: 'Drag to fly. Click a star to travel there. Pinch, Ctrl + scroll or + / − to zoom.', zoomIn: 'Zoom in', zoomOut: 'Zoom out', home: 'Back to the core', core: 'Galactic core', deep: 'Deep space', targetHint: 'Enter to land', notesLabel: 'About this map',
+    stages: ['Public', 'Validating', 'Building', 'Exploring'],
     worldsTitle: 'All worlds', prev: 'Previous world', next: 'Next world', closeWorld: 'Back to the map',
     research: 'Research', background: 'Background', ask: 'Ask about me', reader: 'Recruiter brief',
     heroNote: 'A research practice. A builder’s portfolio.',
@@ -23,8 +24,9 @@ export const ui = {
     allProjects: 'More tools & experiments', jumpWork: 'Explore the work',
   },
   zh: {
-    map: '星图', mapLabel: '项目星图', mapLead: '每颗星球是一个项目。离中心越近，走得越远；带环的星球有公开代码。',
-    mapHint: '选一颗星球降落。', stages: ['已公开', '验证中', '构建中', '探索中'],
+    map: '星图', mapLabel: '项目星系。方向键飞行，Enter 降落到准星对准的恒星。', mapLead: '每颗恒星是一个项目。四条旋臂是四个方向，离银心越近，走得越远；带轨道环的有公开代码。',
+    flyHint: '拖动飞行，点击恒星前往；双指、Ctrl + 滚轮或 + / − 缩放。', zoomIn: '放大', zoomOut: '缩小', home: '回到银心', core: '银心', deep: '深空', targetHint: '按 Enter 降落', notesLabel: '关于这张星图',
+    stages: ['已公开', '验证中', '构建中', '探索中'],
     worldsTitle: '全部星球', prev: '上一颗', next: '下一颗', closeWorld: '回到星图',
     research: '研究', background: '经历', ask: '问问我的工作', reader: '招聘速览',
     heroNote: '研究与构建，放在同一个工作台上。',

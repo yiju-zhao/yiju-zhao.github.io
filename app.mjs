@@ -2,6 +2,7 @@ import { knowledgeRecords } from './lib/public-profile.mjs';
 import { lookup } from './lib/retrieval.mjs';
 import { ui } from './experience-ui.mjs';
 import './motion.mjs';
+import './galaxy.mjs';
 
 const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en';
 const text = ui[lang], records = knowledgeRecords(lang);
@@ -137,106 +138,6 @@ document.querySelector('[data-ask-form]')?.addEventListener('submit', event => {
   const field = event.currentTarget.elements.question;
   openAssistant(field.value.trim()); field.value = '';
 });
-
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const replay = (el, name) => { el.classList.remove(name); void el.offsetWidth; el.classList.add(name); };
-
-// The map: every world is a project. Landing on one opens it in the side panel; on wide
-// screens the map also turns its camera toward that world.
-const map = document.querySelector('[data-map]'), panel = document.querySelector('[data-worlds]');
-let landOnHash = () => {};
-if (map && panel) {
-  const planets = [...map.querySelectorAll('.planet')];
-  const articles = planets.map(p => document.getElementById(p.dataset.world));
-  const camera = map.querySelector('[data-camera]'), spin = map.querySelector('[data-spin]');
-  const system = map.closest('.system'), count = panel.querySelector('[data-world-count]');
-  const markers = [...map.querySelectorAll('.map__ring, .map__ring-label')];
-  const wide = matchMedia('(min-width: 861px)');
-  let current = -1;
-  const light = ring => { for (const m of markers) m.classList.toggle('is-lit', ring != null && m.dataset.ring === String(ring)); };
-  const aim = planet => {
-    const rect = map.getBoundingClientRect();
-    const visible = rect.bottom > 160 && rect.top < innerHeight - 160;
-    if (!planet || !wide.matches || !visible) { camera.style.transform = ''; system.classList.remove('is-focused'); return; }
-    // where the world sits now: its place on the map, turned by however far the map has spun
-    const turn = (parseFloat(getComputedStyle(spin).rotate) || 0) * Math.PI / 180;
-    const x0 = parseFloat(planet.style.getPropertyValue('--x')) / 100 - .5, y0 = parseFloat(planet.style.getPropertyValue('--y')) / 100 - .5;
-    const px = (.5 + x0 * Math.cos(turn) - y0 * Math.sin(turn)) * rect.width, py = (.5 + x0 * Math.sin(turn) + y0 * Math.cos(turn)) * rect.height;
-    const room = innerWidth - panel.offsetWidth - 24;
-    const tx = room / 2 - rect.left, ty = Math.min(Math.max(innerHeight / 2, rect.top + 120), rect.bottom - 120) - rect.top;
-    camera.style.transformOrigin = `${px}px ${py}px`;
-    camera.style.transform = `translate(${tx - px}px, ${ty - py}px) scale(1.35)`;
-    system.classList.add('is-focused');
-  };
-  const open = (index, { focus = true } = {}) => {
-    const changed = index !== current;
-    current = index;
-    planets.forEach((p, i) => p.classList.toggle('is-current', i === index));
-    articles.forEach((a, i) => a.classList.toggle('is-open', i === index));
-    map.classList.add('has-current', 'is-paused');
-    if (changed) { replay(articles[index], 'is-entering'); replay(articles[index], 'is-fresh'); panel.scrollTop = 0; }
-    panel.classList.add('is-open');
-    count.textContent = `${String(index + 1).padStart(2, '0')} / ${planets.length}`;
-    light(planets[index].dataset.ring); aim(planets[index]);
-    if (focus) articles[index].querySelector('h3').focus({ preventScroll: true });
-  };
-  const close = ({ restore = true } = {}) => {
-    if (current < 0) return;
-    const back = planets[current];
-    current = -1;
-    panel.classList.remove('is-open'); map.classList.remove('has-current', 'is-paused');
-    for (const p of planets) p.classList.remove('is-current');
-    light(null); aim(null);
-    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-    if (restore) back.focus({ preventScroll: true });
-  };
-  const indexOf = hash => { try { return planets.findIndex(p => `#${p.dataset.world}` === decodeURIComponent(hash)); } catch { return -1; } };
-  const go = (index, how = 'push') => { open(index); history[how === 'push' ? 'pushState' : 'replaceState'](null, '', `#${planets[index].dataset.world}`); };
-
-  map.addEventListener('click', event => {
-    const planet = event.target.closest('.planet');
-    if (!planet) { close({ restore: false }); return; }
-    event.preventDefault();
-    const index = planets.indexOf(planet);
-    if (index === current) close(); else go(index, current < 0 ? 'push' : 'replace');
-  });
-  for (const planet of planets) {
-    planet.addEventListener('pointerenter', () => light(planet.dataset.ring));
-    planet.addEventListener('pointerleave', () => light(current < 0 ? null : planets[current].dataset.ring));
-    planet.addEventListener('focus', () => light(planet.dataset.ring));
-    planet.addEventListener('blur', () => light(current < 0 ? null : planets[current].dataset.ring));
-  }
-  for (const button of panel.querySelectorAll('[data-step]')) button.addEventListener('click', () => go((current + Number(button.dataset.step) + planets.length) % planets.length, 'replace'));
-  panel.querySelector('[data-close-world]').addEventListener('click', () => close());
-  panel.addEventListener('keydown', event => {
-    if (event.target.closest('input, textarea, .dg-wrap')) return;
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
-    if (step) { event.preventDefault(); go((current + step + planets.length) % planets.length, 'replace'); }
-  });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && current >= 0 && !document.querySelector('dialog[open]')) close(); });
-  document.addEventListener('pointerdown', event => {
-    if (current >= 0 && !panel.contains(event.target) && !map.contains(event.target) && !event.target.closest('dialog, .nav')) close({ restore: false });
-  });
-  // Links to a project anywhere on the page (research notes, answer sources) land on that world.
-  document.addEventListener('click', event => {
-    const link = event.target.closest?.('a[href^="#"]');
-    if (!link || map.contains(link)) return;
-    const index = indexOf(link.hash);
-    if (index >= 0) { event.preventDefault(); go(index); }
-  });
-  addEventListener('hashchange', () => { const index = indexOf(location.hash); if (index >= 0) open(index); else close({ restore: false }); });
-  addEventListener('popstate', () => { const index = indexOf(location.hash); if (index >= 0) open(index); else close({ restore: false }); });
-  addEventListener('resize', () => { if (current >= 0) aim(planets[current]); });
-  landOnHash = () => { const index = indexOf(location.hash); if (index >= 0) open(index); };
-}
-
-// Opening: on a fresh visit or reload the map assembles once and the stars make one short jump.
-const root = document.documentElement;
-if (root.classList.contains('is-landing') && !reducedMotion) {
-  dispatchEvent(new Event('portfolio:land'));
-  setTimeout(() => root.classList.remove('is-landing'), 2000);
-} else root.classList.remove('is-landing');
-landOnHash();
 
 // Diagrams: point at a part to keep what feeds it and what it feeds, and quiet the rest.
 for (const svg of document.querySelectorAll('.dg')) {

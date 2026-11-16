@@ -595,34 +595,36 @@ for (const g of groups) {
 for (const o of others) if (o.name !== 'Herdeo' && !repoGroup[o.name]) throw new Error(`No area for repository ${o.name}`);
 worlds.sort((a, b) => groups.findIndex((g) => g.id === a.group) - groups.findIndex((g) => g.id === b.group) || a.ring - b.ring);
 
-const RADII = [0.31, 0.48, 0.65, 0.82]; // share of the map's half-width
-const SECTOR_GAP = 10, LABEL_GAP = 34; // degrees between areas; the wider gap at the top holds the ring names
-const polar = (deg, r) => [50 + 50 * r * Math.cos(deg * Math.PI / 180), 50 + 50 * r * Math.sin(deg * Math.PI / 180)];
-const sectors = [];
+// The galaxy. Four spiral arms, one per area of work. A world's distance from the core
+// is how far along it is: public, validating, building, exploring. Coordinates are in
+// galaxy units (radius 1000); the page tilts the disc and lets visitors fly over it.
+const GALAXY = { R: 1000, tilt: 0.62, twist: 3.1, zones: [0.3, 0.46, 0.62, 0.79] };
+const armBase = {};
 {
   const areas = [...new Set(worlds.map((w) => w.group))];
-  const usable = 360 - LABEL_GAP - SECTOR_GAP * (areas.length - 1);
-  let start = -90 + LABEL_GAP / 2;
+  areas.forEach((id, i) => { armBase[id] = -100 + i * 90; });
+  const along = (id, r) => armBase[id] * Math.PI / 180 + GALAXY.twist * r;
   for (const id of areas) {
-    const members = worlds.filter((w) => w.group === id), span = usable * members.length / worlds.length;
-    sectors.push({ id, start, span, mid: start + span / 2 });
-    RADII.forEach((r, k) => {
-      const cell = members.filter((w) => w.ring === k);
+    GALAXY.zones.forEach((zone, k) => {
+      const cell = worlds.filter((w) => w.group === id && w.ring === k);
       cell.forEach((w, i) => {
-        // neighbouring rings are offset a little so worlds do not line up along a radius
-        const t = (i + 0.5 + (cell.length > 1 ? (k % 2 ? 0.16 : -0.16) : 0)) / cell.length;
-        w.angle = start + span * t;
-        [w.x, w.y] = polar(w.angle, r);
+        // a cell's worlds spread across the arm's width, alternating a little in and out
+        const spread = cell.length > 1 ? (i / (cell.length - 1) - 0.5) * Math.min(0.66, 0.2 * cell.length) : 0;
+        const r = zone + (cell.length > 1 ? (i % 2 ? 0.028 : -0.028) : 0);
+        const theta = along(id, r) + spread;
+        w.wx = Math.round(GALAXY.R * r * Math.cos(theta));
+        w.wy = Math.round(GALAXY.R * r * Math.sin(theta));
       });
     });
-    start += span + SECTOR_GAP;
   }
   for (const a of worlds) for (const b of worlds) {
-    if (a === b) continue;
-    if (Math.hypot(a.x - b.x, a.y - b.y) < 4.6) throw new Error(`Worlds too close on the map: ${a.slug} and ${b.slug}`);
+    if (a !== b && Math.hypot(a.wx - b.wx, a.wy - b.wy) < 36) throw new Error(`Worlds too close in the galaxy: ${a.slug} and ${b.slug}`);
   }
+  GALAXY.arms = Object.fromEntries(areas.map((id) => [id, armBase[id]]));
+  GALAXY.armLabels = Object.fromEntries(areas.map((id) => { const t = along(id, 0.88) - 0.16; return [id, [Math.round(GALAXY.R * 0.9 * Math.cos(t)), Math.round(GALAXY.R * 0.9 * Math.sin(t))]]; }));
 }
-const pct = (n) => `${n.toFixed(2)}%`;
+// Where a galaxy point sits before the script takes over: the default view, fitted to a 1.6:1 frame.
+const fallback = (wx, wy) => `--x:${(50 + wx / 21.8).toFixed(2)}%;--y:${(50 + wy / 22).toFixed(2)}%`;
 
 function buildPage(lang) {
   const text = copy[lang], u = ui[lang];
@@ -659,21 +661,23 @@ function buildPage(lang) {
   const told = new Map(worlds.map((w) => [w.slug, describe(w)]));
   const where = (w) => `${text.groupNames[w.group]} · ${u.stages[w.ring]}`;
 
-  const planet = (w) => {
+  const star = (w) => {
     const d = told.get(w.slug);
-    const cls = `planet${majors.includes(w.slug) ? ' planet--major' : ''}${d.repo ? ' planet--ringed' : ''}`;
-    return `<a class="${cls}" href="#${w.slug}" data-world="${w.slug}" data-ring="${w.ring}" style="--x:${pct(w.x)};--y:${pct(w.y)};--ring:${w.ring}" aria-label="${esc(d.title)}, ${esc(where(w))}"><span class="planet__body"><span class="planet__ball"></span><span class="planet__label" aria-hidden="true">${esc(d.title)}</span></span></a>`;
+    const cls = `star${majors.includes(w.slug) ? ' star--major' : ''}${d.repo ? ' star--ringed' : ''}`;
+    return `<a class="${cls}" href="#${w.slug}" data-world="${w.slug}" data-wx="${w.wx}" data-wy="${w.wy}" data-zone="${w.ring}" style="${fallback(w.wx, w.wy)}" aria-label="${esc(d.title)}, ${esc(where(w))}"><span class="star__body"></span><span class="star__label" aria-hidden="true">${esc(d.title)}</span></a>`;
   };
-  const map = `<div class="map" data-map>
-<div class="map__camera" data-camera>
-<svg class="map__rings" viewBox="0 0 100 100" aria-hidden="true">${RADII.map((r, k) => `<circle class="map__ring" data-ring="${k}" cx="50" cy="50" r="${(r * 50).toFixed(2)}"/>`).join('')}</svg>
-<div class="map__spin" data-spin>
-${sectors.map((s) => { const [x, y] = polar(s.mid, 0.93); return `<span class="map__sector" style="--x:${pct(x)};--y:${pct(y)}" aria-hidden="true"><span>${esc(text.groupNames[s.id])}</span></span>`; }).join('\n')}
-${RADII.map((r, k) => `<span class="map__ring-label" data-ring="${k}" style="--x:50%;--y:${pct(50 - r * 50)}" aria-hidden="true"><span>${esc(u.stages[k])}</span></span>`).join('')}
-${worlds.map(planet).join('\n')}
-</div>
-<span class="map__sun" aria-hidden="true"></span>
-</div></div>`;
+  const config = { ...GALAXY, labels: { arms: Object.fromEntries(Object.keys(GALAXY.arms).map((id) => [id, text.groupNames[id]])), zones: u.stages, core: u.core, deep: u.deep, land: u.targetHint } };
+  const galaxy = `<section class="galaxy" id="map" aria-labelledby="name" data-galaxy="${esc(JSON.stringify(config))}">
+<div class="galaxy__view" data-view tabindex="0" role="group" aria-label="${esc(u.mapLabel)}" aria-describedby="galaxy-hint">
+<div class="galaxy__layer" data-layer>
+${Object.entries(GALAXY.armLabels).map(([id, [x, y]]) => `<span class="galaxy__arm" data-wx="${x}" data-wy="${y}" style="${fallback(x, y)}" aria-hidden="true">${esc(text.groupNames[id])}</span>`).join('')}
+${GALAXY.zones.map((z, k) => `<span class="galaxy__zone" data-zone="${k}" data-wx="0" data-wy="${-Math.round(z * GALAXY.R)}" style="${fallback(0, -z * GALAXY.R)}" aria-hidden="true">${esc(u.stages[k])}</span>`).join('')}
+${worlds.map(star).join('\n')}
+</div><span class="galaxy__reticle" aria-hidden="true"></span></div>
+<div class="galaxy__intro"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p></div>
+<canvas class="galaxy__minimap" data-minimap width="132" height="132" aria-hidden="true"></canvas>
+<div class="hud"><p class="hud__readout"><span data-hud-where></span><span class="hud__target" data-hud-target></span></p><p class="hud__hint" id="galaxy-hint">${esc(u.flyHint)}</p><div class="hud__controls"><button type="button" data-zoom="-1" aria-label="${esc(u.zoomOut)}">−</button><button type="button" data-zoom="1" aria-label="${esc(u.zoomIn)}">+</button><button type="button" class="hud__home" data-home>${esc(u.home)}</button></div></div>
+</section>`;
 
   const world = (w) => {
     const d = told.get(w.slug);
@@ -703,11 +707,11 @@ ${metadata(lang)}<script>${head}</script><link rel="icon" href="favicon.svg" typ
 <div class="page"><header class="nav" id="top"><a class="wordmark" href="#top" aria-label="${esc(text.home)}">eason<span aria-hidden="true">.</span></a>
 <nav class="nav__sections" aria-label="${text.nav}"><a href="#map">${u.map}</a><a href="#interests">${u.research}</a><a href="#background">${u.background}</a></nav>
 <div class="nav__actions"><button class="ask-small" type="button" data-ask>${u.ask} <kbd aria-hidden="true">⌘K</kbd></button><button class="theme-toggle" type="button" data-theme-toggle aria-label="${lang === 'en' ? 'Toggle dark appearance' : '切换深浅外观'}" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.3" stroke="currentColor"/><path d="M10 3.7a6.3 6.3 0 010 12.6z" fill="currentColor"/></svg></button><a class="language-switch" href="${text.switchPath}" hreflang="${lang === 'en' ? 'zh-CN' : 'en'}" lang="${lang === 'en' ? 'zh-CN' : 'en'}" aria-label="${text.switchTitle}">${text.switchLabel}</a></div></header>
-<main id="main"><section class="system" id="map" aria-labelledby="name"><div class="system__text system__lead"><h1 id="name">${identity.name}<span aria-hidden="true">.</span></h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p></div>
-<div class="system__text system__more"><p class="intro__context">${text.context}</p>
-<form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><noscript><p class="system__noscript"><a href="profile.md">${u.profileMd} ↗</a></p></noscript>
+<main id="main">${galaxy}
+<section class="galaxy-notes" aria-label="${esc(u.notesLabel)}"><div><p class="intro__context">${text.context}</p>
+<form class="ask-form" data-ask-form><input name="question" type="text" maxlength="1200" autocomplete="off" aria-label="${u.placeholder}" placeholder="${u.placeholder}"><button type="submit">${u.send}</button></form><noscript><p class="galaxy-notes__noscript"><a href="profile.md">${u.profileMd} ↗</a></p></noscript>
 <div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></div>
-<figure class="system__map" aria-label="${esc(u.mapLabel)}">${map}<figcaption class="map__caption"><span>${esc(u.mapLead)}</span><span class="map__hint">${esc(u.mapHint)}</span></figcaption></figure></section>
+<p class="galaxy-notes__legend">${esc(u.mapLead)}</p></section>
 <section class="worlds" id="worlds" data-worlds aria-labelledby="worlds-h"><div class="worlds__bar"><span class="worlds__count" data-world-count></span><button class="worlds__step" type="button" data-step="-1" aria-label="${esc(u.prev)}">←</button><button class="worlds__step" type="button" data-step="1" aria-label="${esc(u.next)}">→</button><button class="worlds__step" type="button" data-close-world aria-label="${esc(u.closeWorld)}">×</button></div><h2 class="worlds__title" id="worlds-h">${esc(u.worldsTitle)}</h2><div class="worlds__list">${worlds.map(world).join('\n')}</div></section>
 <section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${l.href}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">→</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
 <section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
@@ -717,7 +721,7 @@ ${metadata(lang)}<script>${head}</script><link rel="icon" href="favicon.svg" typ
 </body></html>`;
   const filename = lang === 'en' ? 'index.html' : 'zh.html';
   writeFileSync(new URL(filename, import.meta.url), html);
-  console.log(`${filename}: ${worlds.length} worlds in ${sectors.length} areas, 4 interests`);
+  console.log(`${filename}: ${worlds.length} stars on ${Object.keys(GALAXY.arms).length} arms, 4 interests`);
 }
 
 for (const lang of ['en', 'zh']) buildPage(lang);
