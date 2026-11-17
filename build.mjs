@@ -735,7 +735,7 @@ ${d.p ? `<figure class="world__diagram">${renderDiagram(d.p, text)}<figcaption d
 <title>${esc(title)}</title><meta name="description" content="${esc(text.meta)}">
 ${metadata(lang, page)}<script>${head}${page === 'deck' ? "document.documentElement.dataset.theme='dark';" : ''}</script><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><script type="module" src="app.mjs"></script></head>
 <body${page === 'deck' ? ' class="deck-page"' : ''}>
-<!-- For agents and crawlers: a plain-text profile is at /llms.txt, structured data at /profile.json, Markdown at /profile.md, and a recruiter brief at /recruiters.html. Everything on this page is also in the HTML below. -->
+<!-- For agents and crawlers: a plain-text profile is at /llms.txt, structured data at /profile.json, Markdown at /profile.md. Everything on this page is also in the HTML below. -->
 ${body}
 ${dialog}
 </body></html>`;
@@ -748,7 +748,7 @@ ${nav('deck')}
 <button class="manifest__toggle" type="button" data-manifest-toggle aria-expanded="false" aria-controls="manifest-list"><span>${esc(countLine)}</span><span class="expand" aria-hidden="true"></span></button>
 <div class="manifest__list" id="manifest-list"><p class="manifest__count">${esc(countLine)}</p>
 ${manifest}</div>
-<div class="manifest__foot"><a class="manifest__about" href="${about}">${esc(u.aboutMore)} <span aria-hidden="true">→</span></a><div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></div>
+<div class="manifest__foot"><a class="manifest__about" href="${about}">${esc(u.aboutMore)} <span aria-hidden="true">→</span></a><div class="contact-links">${contacts}</div><noscript><p><a href="profile.md">${u.profileMd} ↗</a></p></noscript></div>
 </aside>
 ${viewport}
 ${scanner}
@@ -759,11 +759,11 @@ ${dash}
   const toProject = (href) => href.startsWith('#') ? `${home}${href}` : href;
   const aboutPage = shell('about', u.aboutTitle, `<a class="skip" href="#main">${text.skip}</a>
 <div class="page">${nav('about')}
-<main id="main"><section class="about-hero" aria-labelledby="about-title"><h1 id="about-title">${esc(u.aboutHeading)}</h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links">${contacts}<a href="recruiters.html">${u.reader} ${arrow}</a></div></section>
+<main id="main"><section class="about-hero" aria-labelledby="about-title"><h1 id="about-title">${esc(u.aboutHeading)}</h1><p class="intro__identity">${[u.credentials[0][1], u.credentials[1][1], text.location].map(esc).join(' <span aria-hidden="true">·</span> ')}</p><p class="intro__description">${text.intro}</p><p class="intro__context">${text.context}</p><div class="contact-links">${contacts}</div></section>
 <section class="section research-section" id="interests" aria-labelledby="interests-h">${label('interests-h', [text.interests[0], u.researchLead])}<div class="interests">${text.focus.map((f, i) => `<details class="interest" name="interests"${i ? '' : ' open'}><summary><h3>${esc(f.title)}</h3><span class="expand" aria-hidden="true"></span></summary><div class="interest__body"><p>${esc(f.text)}</p>${f.links ? `<div class="interest-links">${f.links.map(l => `<a href="${toProject(l.href)}"${l.href.startsWith('https:') ? ' rel="noopener"' : ''}>${esc(l.text)} ${l.href.startsWith('https:') ? arrow : '<span aria-hidden="true">→</span>'}</a>`).join('')}</div>` : ''}</div></details>`).join('\n')}</div></section>
 <section class="section background-section" id="background" aria-labelledby="background-h">${label('background-h', text.background)}<div class="background"><ol class="experience">${text.experience.map(e => `<li><p class="experience__dates">${esc(e.dates)}</p><div class="experience__heading"><h3>${esc(e.organization)}</h3><span>${esc(e.role)}</span></div><p class="experience__description">${esc(e.text)}</p></li>`).join('\n')}</ol><div class="education"><h3>${text.education}</h3><ul>${text.degrees.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div></div></section>
 <section class="section about" id="about" aria-labelledby="about-h">${label('about-h', text.aboutLabel)}<div class="about__body">${text.aboutParagraphs.map(p => `<p>${esc(p)}</p>`).join('')}<div class="contact-links">${contacts}</div><p class="about__deck"><a href="${home}">${esc(u.deckLink)} <span aria-hidden="true">→</span></a></p></div></section></main>
-<div class="agent-links"><span>${u.profileLinks}</span><a href="recruiters.html">${u.reader} ↗</a><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="${home}">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>`);
+<div class="agent-links"><span>${u.profileLinks}</span><a href="profile.md">${u.profileMd} ↗</a><a href="profile.json">${u.profileJson} ↗</a><a href="llms.txt">llms.txt ↗</a></div><footer class="footer"><a href="${home}">${identity.name}</a><span>${text.updated} <span aria-hidden="true">·</span> <time datetime="${UPDATED}">${UPDATED}</time></span><a href="${GH}" rel="noopener">GitHub ${arrow}</a></footer></div>`);
 
   writeFileSync(new URL(home, import.meta.url), deck);
   writeFileSync(new URL(about, import.meta.url), aboutPage);

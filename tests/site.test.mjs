@@ -5,7 +5,7 @@ import { publicProfile, knowledgeRecords, SITE } from '../lib/public-profile.mjs
 import { copy } from '../content.mjs';
 const root = new URL('../', import.meta.url);
 const read = path => readFileSync(new URL(path, root), 'utf8');
-const files = ['index.html', 'zh.html', 'about.html', 'zh-about.html', 'recruiters.html'];
+const files = ['index.html', 'zh.html', 'about.html', 'zh-about.html'];
 const unescape = s => s.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>');
 const ids = file => [...read(file).matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 const plain = s => unescape(s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ' ').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
@@ -39,7 +39,7 @@ test('bilingual pages keep complete project graphs and labeled source lookup', (
   const englishBody = read('index.html').split(/<body[^>]*>/)[1];
   assert.equal((plain(englishBody).match(/[\u3400-\u9fff]/g) || []).join(''), '中文');
 });
-test('structured person data and recruiter-facing files agree with visible career facts', () => {
+test('structured person data and machine-readable profiles agree with visible career facts', () => {
   const p = publicProfile();
   assert.deepEqual(JSON.parse(read('profile.json')), p);
   // the flight deck carries the projects; About carries the career and research details
@@ -54,7 +54,6 @@ test('structured person data and recruiter-facing files agree with visible caree
   for (const project of p.projects) assert.ok(visible.includes(project.implementation));
   assert.ok(visible.includes(copy.en.intro));
   assert.ok(read('profile.md').includes('Evaluation is ongoing.'));
-  assert.ok(read('recruiters.html').includes('evaluation is ongoing'));
 });
 test('assistant document anchors are resolvable and no private career details enter the public profile', () => {
   for (const lang of ['en','zh']) for (const r of knowledgeRecords(lang)) {
@@ -67,7 +66,7 @@ test('assistant document anchors are resolvable and no private career details en
 });
 test('sitemap and crawler hints point to real canonical pages without synthetic anchor URLs', () => {
   const locations = [...read('sitemap.xml').matchAll(/<loc>(.*?)<\/loc>/g)].map(m => m[1]);
-  assert.equal(locations.length, 5);
+  assert.equal(locations.length, 4);
   for (const location of locations) { assert.ok(!location.includes('#')); const u = new URL(location); assert.ok(existsSync(new URL(u.pathname === '/' ? 'index.html' : u.pathname.slice(1), root))); }
   assert.ok(read('robots.txt').includes(`Sitemap: ${SITE}/sitemap.xml`));
   assert.ok(read('llms.txt').includes(`${SITE}/profile.json`));

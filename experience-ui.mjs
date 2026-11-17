@@ -8,7 +8,7 @@ export const ui = {
     flyHint: 'Drag to look around. WASD, Shift + drag or two fingers to fly. Ctrl + scroll or pinch to move closer. Click a star to land.', zoomIn: 'Zoom in', zoomOut: 'Zoom out', home: 'Back to the core', core: 'Galactic core', deep: 'Deep space', targetHint: 'Enter to land', notesLabel: 'About this map',
     stages: ['Public', 'Validating', 'Building', 'Exploring'],
     worldsTitle: 'All worlds', prev: 'Previous world', next: 'Next world', closeWorld: 'Back to the map',
-    research: 'Research', background: 'Background', ask: 'Ask about me', reader: 'Recruiter brief',
+    research: 'Research', background: 'Background', ask: 'Ask about me',
     heroNote: 'A research practice. A builder’s portfolio.',
     credentials: [['Now', 'Research Engineer, Huawei'], ['Education', 'PhD, Waterloo'], ['Based in', 'Toronto, Canada']],
     assistantTitle: 'A conversation with the work.', assistantDescription: 'Explore my research, projects, and experience. Every answer comes with a place to look closer.',
@@ -24,7 +24,6 @@ export const ui = {
     sources: 'Read the sources', clear: 'Clear answer', privacy: 'Uses public information only. AI mode sends your question to Anthropic.',
     workLead: 'Tools I build for work I actually do.', researchLead: 'The questions I keep coming back to.',
     traceHint: 'Hover or tap a part to trace its inputs and outputs.', profileLinks: 'For people & agents', profileMd: 'Profile / Markdown', profileJson: 'Profile / JSON',
-    briefTitle: 'A concise brief for research & agent teams.', briefDescription: 'Experience, areas of work, project evidence, and how to reach me. The same facts as the portfolio, in a format you can take with you.',
     allProjects: 'More tools & experiments', jumpWork: 'Explore the work',
   },
   zh: {
@@ -36,7 +35,7 @@ export const ui = {
     flyHint: '拖动环顾四周；WASD、Shift + 拖动或双指平移飞行；Ctrl + 滚轮或双指捏合靠近；点击恒星降落。', zoomIn: '放大', zoomOut: '缩小', home: '回到银心', core: '银心', deep: '深空', targetHint: '按 Enter 降落', notesLabel: '关于这张星图',
     stages: ['已公开', '验证中', '构建中', '探索中'],
     worldsTitle: '全部星球', prev: '上一颗', next: '下一颗', closeWorld: '回到星图',
-    research: '研究', background: '经历', ask: '问问我的工作', reader: '招聘速览',
+    research: '研究', background: '经历', ask: '问问我的工作',
     heroNote: '研究与构建，放在同一个工作台上。',
     credentials: [['目前', 'Research Engineer，华为'], ['教育', 'PhD，Waterloo'], ['所在', '多伦多，加拿大']],
     assistantTitle: '从一个问题，了解我的工作。', assistantDescription: '问研究、项目或经历。每次回答都附上可以继续核对的出处。',
@@ -52,7 +51,6 @@ export const ui = {
     sources: '继续查看出处', clear: '清空回答', privacy: '仅使用公开资料。AI 模式下，问题会发送给 Anthropic。',
     workLead: '从实际工作中长出来的工具。', researchLead: '我反复回到的几个问题。',
     traceHint: '悬停或点按任一模块，查看它的输入和输出。', profileLinks: '给读者与 agent', profileMd: '个人资料 / Markdown', profileJson: '个人资料 / JSON',
-    briefTitle: '给研究与 agent 团队的一份简短介绍。', briefDescription: '经历、研究方向、作品证据与联系方式。与首页使用同一份资料，便于保存和继续核对。',
     allProjects: '更多工具与实验', jumpWork: '看作品',
   },
 };
