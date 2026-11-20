@@ -27,9 +27,11 @@ function init() {
     return { el, x: +el.dataset.wx, y: lift, z: +el.dataset.wy };
   });
   const stars = placed.filter(p => p.el.classList.contains('star'));
+  const clusters = placed.filter(p => p.el.dataset.cluster).map(label => ({
+    label, members: stars.filter(star => star.el.dataset.area === label.el.dataset.cluster)
+  }));
   const articles = stars.map(s => document.getElementById(s.el.dataset.world));
   const whereOut = section.querySelector('[data-hud-where]');
-  const dial = section.querySelector('[data-heading]'), hdgOut = section.querySelector('[data-hdg]'), altOut = section.querySelector('[data-alt]'), pitchOut = section.querySelector('[data-pitch]');
   const scanner = section.querySelector('[data-scanner]'), scan = { where: section.querySelector('[data-scan-where]'), title: section.querySelector('[data-scan-title]'), text: section.querySelector('[data-scan-text]') };
   const manifest = section.querySelector('[data-manifest]');
   const items = stars.map(s => manifest?.querySelector(`.manifest__item[data-world="${s.el.dataset.world}"]`));
@@ -50,9 +52,9 @@ function init() {
   arms.forEach((base, ai) => {
     const hue = armHue[ai], tint = c => [c[0] * .7 + hue[0] * .3, c[1] * .7 + hue[1] * .3, c[2] * .7 + hue[2] * .3];
     const L = armLen[ai];
-    for (let i = 0; i < Math.round(2600 * L); i++) {
+    for (let i = 0; i < Math.round(950 * L); i++) {
       const r = .05 + rand() ** .85 * (L - .03), t = along(base, r) + gauss() * .19 * (1.15 - r * .5), rr = r + gauss() * .024;
-      add(points, R * rr * Math.cos(t), gauss() * 26 * (1.2 - r * .7), R * rr * Math.sin(t), r > .22 ? tint(WARM[pick()]) : WARM[pick()], .45 + rand() * .55, 2.2 + rand() ** 4 * 7);
+      add(points, R * rr * Math.cos(t), gauss() * 26 * (1.2 - r * .7), R * rr * Math.sin(t), r > .22 ? tint(WARM[pick()]) : WARM[pick()], .24 + rand() * .38, 2 + rand() ** 4 * 4);
     }
     for (let r = .06; r < L + .02; r += .01) {
       const t = along(base, r), x = R * r * Math.cos(t), z = R * r * Math.sin(t);
@@ -61,19 +63,8 @@ function init() {
       if (r < L * .95) add(dust, R * r * Math.cos(td), 4, R * r * Math.sin(td), [0, 0, 0], .28, 52 + rand() * 30);
     }
   });
-  for (let i = 0; i < 2600; i++) { const r = Math.abs(gauss()) * .12, t = rand() * Math.PI * 2, y = gauss() * R * .045 * (1 - r * 2); add(points, R * r * Math.cos(t), y, R * r * Math.sin(t), WARM[rand() < .6 ? 1 : 0], .5 + rand() * .5, 2 + rand() * 3.5); }
-  for (let i = 0; i < 1400; i++) { const r = Math.sqrt(rand()) * 1.35, t = rand() * Math.PI * 2; add(points, R * r * Math.cos(t), gauss() * 90, R * r * Math.sin(t), WARM[rand() < .2 ? 3 : 0], .3 + rand() * .5, 2 + rand() * 2.5); }
-  // a far sky behind everything, so turning the camera always shows stars
-  for (let i = 0; i < 1800; i++) { const u = rand() * 2 - 1, t = rand() * Math.PI * 2, d = 9000 + rand() * 3000, k = Math.sqrt(1 - u * u); add(points, d * k * Math.cos(t), d * u, d * k * Math.sin(t), WARM[rand() < .25 ? 3 : 0], .35 + rand() * .5, 18 + rand() * 22); }
+  for (let i = 0; i < 850; i++) { const r = Math.abs(gauss()) * .12, t = rand() * Math.PI * 2, y = gauss() * R * .045 * (1 - r * 2); add(points, R * r * Math.cos(t), y, R * r * Math.sin(t), WARM[rand() < .6 ? 1 : 0], .5 + rand() * .5, 2 + rand() * 3.5); }
   add(nebula, 0, 0, 0, [1, .82, .6], .5, 520); add(nebula, 0, 0, 0, [1, .9, .75], .7, 230);
-  // each arm carries short orbit marks where its stages sit, instead of rings round the whole disc
-  const rings = [], ARC = 24;
-  armIds.forEach((id, ai) => G.stageRadii[id].forEach((rk, k) => {
-    const mid = along(arms[ai], rk);
-    for (let i = 0; i <= ARC; i++) { const t = mid - .34 + .68 * i / ARC, fade = Math.sin(Math.PI * i / ARC); add(rings, rk * R * Math.cos(t), 0, rk * R * Math.sin(t), armHue[ai], .22 * fade + .02, 1); }
-  }));
-  const arcCount = armIds.length * 4;
-
   // ------------------------------------------------------------ WebGL
   let loc, bufs, bind;
   if (glReady) {
@@ -81,22 +72,21 @@ function init() {
   const prog = gl.createProgram();
   gl.attachShader(prog, shader(gl.VERTEX_SHADER, `
     attribute vec3 p; attribute vec4 c; attribute float s;
-    uniform mat4 vp; uniform float scale; uniform float lineMode;
-    varying vec4 vc; varying float vf; varying float vl;
+    uniform mat4 vp; uniform float scale;
+    varying vec4 vc; varying float vf;
     void main() {
-      vl = lineMode;
       gl_Position = vp * vec4(p, 1.0);
       float px = s * scale / max(gl_Position.w, 1.0);
       gl_PointSize = clamp(px, 1.4, 900.0);
       // tiny points fade instead of flickering; huge cloud sprites fade as you fly into them
-      vf = lineMode > .5 ? 1.0 : clamp(px / 1.4, .25, 1.0) * clamp(1.6 - px / 500.0, 0.0, 1.0);
+      vf = clamp(px / 1.4, .25, 1.0) * clamp(1.6 - px / 500.0, 0.0, 1.0);
       vc = c;
     }`));
   gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, `
-    precision mediump float; varying vec4 vc; varying float vf; varying float vl; uniform float soft;
+    precision mediump float; varying vec4 vc; varying float vf; uniform float soft;
     void main() {
-      float a = 1.0;
-      if (vl < .5) { float d = length(gl_PointCoord - .5) * 2.0; a = soft > .5 ? pow(max(1.0 - d, 0.0), 1.8) : exp(-d * d * 5.0); }
+      float d = length(gl_PointCoord - .5) * 2.0;
+      float a = soft > .5 ? pow(max(1.0 - d, 0.0), 1.8) : exp(-d * d * 5.0);
       a *= vc.a * vf;
       gl_FragColor = vec4(vc.rgb * a, a);
     }`));
@@ -104,9 +94,9 @@ function init() {
   glReady = gl.getProgramParameter(prog, gl.LINK_STATUS);
   if (!glReady) console.warn('galaxy: WebGL program did not link', gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
-  loc = { p: gl.getAttribLocation(prog, 'p'), c: gl.getAttribLocation(prog, 'c'), s: gl.getAttribLocation(prog, 's'), vp: gl.getUniformLocation(prog, 'vp'), scale: gl.getUniformLocation(prog, 'scale'), line: gl.getUniformLocation(prog, 'lineMode'), soft: gl.getUniformLocation(prog, 'soft') };
+  loc = { p: gl.getAttribLocation(prog, 'p'), c: gl.getAttribLocation(prog, 'c'), s: gl.getAttribLocation(prog, 's'), vp: gl.getUniformLocation(prog, 'vp'), scale: gl.getUniformLocation(prog, 'scale'), soft: gl.getUniformLocation(prog, 'soft') };
   const upload = data => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); return { b, n: data.length / 8 }; };
-  bufs = { nebula: upload(nebula), dust: upload(dust), points: upload(points), rings: upload(rings) };
+  bufs = { nebula: upload(nebula), dust: upload(dust), points: upload(points) };
   bind = ({ b }) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, b);
     gl.enableVertexAttribArray(loc.p); gl.vertexAttribPointer(loc.p, 3, gl.FLOAT, false, 32, 0);
@@ -147,18 +137,32 @@ function init() {
   };
   // The chart is lopsided (arms differ in length), so the home view is fitted: try every
   // heading, keep the one where all planets and arm tips fill the windshield best.
+  const extent = placed.map(p => [p.x, p.z]);
+  arms.forEach((base, i) => {
+    for (let step = 0; step <= 16; step++) {
+      const r = armLen[i] * step / 16, t = along(base, r);
+      extent.push([R * r * Math.cos(t), R * r * Math.sin(t)]);
+    }
+  });
   const fitHome = () => {
-    const pitch = .62, sp = Math.sin(pitch), aspect = W / H, pts = placed.map(p => [p.x, p.z]);
+    const pitch = .62, sp = Math.sin(pitch), aspect = W / H;
     let best = null;
     for (let yaw = 0; yaw < Math.PI * 2; yaw += Math.PI / 36) {
       const c = Math.cos(yaw), s = Math.sin(yaw);
       let h0 = Infinity, h1 = -Infinity, d0 = Infinity, d1 = -Infinity;
-      for (const [x, z] of pts) { const h = x * c - z * s, d = x * s + z * c; h0 = Math.min(h0, h); h1 = Math.max(h1, h); d0 = Math.min(d0, d); d1 = Math.max(d1, d); }
-      const width = h1 - h0, height = (d1 - d0) * sp, need = Math.max(width / aspect, height);
-      if (!best || need < best.need) best = { need, yaw, hc: (h0 + h1) / 2, dc: (d0 + d1) / 2 };
+      for (const [x, z] of extent) { const h = x * c - z * s, d = x * s + z * c; h0 = Math.min(h0, h); h1 = Math.max(h1, h); d0 = Math.min(d0, d); d1 = Math.max(d1, d); }
+      const hc = (h0 + h1) / 2, dc = (d0 + d1) / 2;
+      // The near edge of the tilted disc projects larger. Keep room for its labels.
+      let need = 0;
+      for (const [x, z] of extent) {
+        const horizontal = x * c - z * s - hc, depth = x * s + z * c - dc;
+        const halfSpan = Math.max(Math.abs(horizontal) / aspect, Math.abs(depth) * sp);
+        need = Math.max(need, depth * Math.cos(pitch) + halfSpan * T / 0.77);
+      }
+      if (!best || need < best.need) best = { need, yaw, hc, dc };
     }
     const c = Math.cos(best.yaw), s = Math.sin(best.yaw);
-    return { x: best.hc * c + best.dc * s, z: -best.hc * s + best.dc * c, yaw: best.yaw, pitch, dist: best.need * 1.5 * T / 2 + 260, ox: 0, oy: 0 };
+    return { x: best.hc * c + best.dc * s, z: -best.hc * s + best.dc * c, yaw: best.yaw, pitch, dist: best.need, ox: 0, oy: 0 };
   };
   const resize = () => {
     const rect = view.getBoundingClientRect(), first = W === 0;
@@ -170,7 +174,7 @@ function init() {
   };
 
   // ------------------------------------------------------------ motion
-  let tween = null, current = -1, frame = 0, last = performance.now(), visible = true, idleSince = performance.now();
+  let tween = null, current = -1, frame = 0, last = performance.now(), visible = true;
   const keys = new Set(), vel = { x: 0, z: 0 };
   const ease = t => t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
   const angleTo = (a, b) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a));
@@ -182,7 +186,7 @@ function init() {
     tween = { from: { ...cam }, to: target, start: performance.now(), dur: Math.min(2200, 900 + far * .9 + Math.abs(Math.log(target.dist / cam.dist)) * 300), lift: Math.min(.9, far / R * .8), done };
     vel.x = vel.z = 0; wake();
   };
-  const touch = () => { idleSince = performance.now(); section.classList.add('is-flown'); };
+  const touch = () => { section.classList.add('is-flown'); };
   const panBy = (dx, dy) => {
     // screen movement to movement over the disc, relative to where the camera is facing
     const k = cam.dist * 2 / (T * H), right = [Math.cos(cam.yaw), -Math.sin(cam.yaw)], fwd = [-Math.sin(cam.yaw), -Math.cos(cam.yaw)];
@@ -211,8 +215,6 @@ function init() {
       if (!dragging && (Math.abs(vel.x) + Math.abs(vel.z) > .5)) {
         cam.x += vel.x * dt; cam.z += vel.z * dt; const k = Math.exp(-dt * 3); vel.x *= k; vel.z *= k; moving = true;
       } else if (!dragging) vel.x = vel.z = 0;
-      // left alone, the ship slowly circles where it is
-      if (!reduced && current < 0 && now - idleSince > 5000) { cam.yaw += dt * .035; moving = true; }
       clampCam();
     }
     draw();
@@ -222,42 +224,39 @@ function init() {
 
   // ------------------------------------------------------------ drawing
   let lastWhere = '';
-  const instruments = {};
   const draw = () => {
     matrices();
     if (glReady) {
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniformMatrix4fv(loc.vp, false, vp);
     gl.uniform1f(loc.scale, H * dpr / 2 * T);
-    gl.uniform1f(loc.line, 0);
     gl.uniform1f(loc.soft, 1); gl.blendFunc(gl.ONE, gl.ONE); bind(bufs.nebula); gl.drawArrays(gl.POINTS, 0, bufs.nebula.n);
     gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA); bind(bufs.dust); gl.drawArrays(gl.POINTS, 0, bufs.dust.n);
     gl.uniform1f(loc.soft, 0); gl.blendFunc(gl.ONE, gl.ONE); bind(bufs.points); gl.drawArrays(gl.POINTS, 0, bufs.points.n);
-    gl.uniform1f(loc.line, 1); bind(bufs.rings);
-    for (let k = 0; k < arcCount; k++) gl.drawArrays(gl.LINE_STRIP, k * (ARC + 1), ARC + 1);
     }
 
     // HTML stars and labels follow the same projection; nearer ones draw larger and on top
     const near = cam.dist < 900;
     for (const p of placed) {
       const s = project(p.x, p.y, p.z);
+      p.s = s;
       if (!s || s[0] < -90 || s[1] < -50 || s[0] > W + 90 || s[1] > H + 50) { p.el.style.visibility = 'hidden'; continue; }
       p.el.style.visibility = '';
       p.el.style.transform = `translate(${s[0].toFixed(1)}px, ${s[1].toFixed(1)}px)`;
       const k = Math.min(1.9, Math.max(.6, 1500 / s[2]));
       p.el.style.setProperty('--k', k.toFixed(2)); p.el.style.zIndex = String(Math.round(20000 - s[2]));
-      p.s = s;
+    }
+    for (const { label, members } of clusters) {
+      if (!label.s || label.el.style.visibility === 'hidden') continue;
+      const bottom = Math.max(...members.map(p => p.s?.[1] ?? label.s[1]));
+      const x = Math.max(label.el.offsetWidth / 2, Math.min(W - label.el.offsetWidth / 2, label.s[0]));
+      label.el.style.transform = `translate(${x}px, ${Math.min(H - 28, bottom + 10)}px)`;
     }
     view.toggleAttribute('data-near', near);
     let where;
-    if (current >= 0) where = tween ? `${G.labels.approaching} ${title(stars[current])}` : `${title(stars[current])} · ${locate(stars[current].x, stars[current].z)}`;
+    if (current >= 0) where = tween ? `${G.labels.approaching} ${title(stars[current])}` : `${title(stars[current])} · ${G.labels.zones[stars[current].el.dataset.zone]}`;
     else where = Math.hypot(cam.x - home.x, cam.z - home.z) < 120 && cam.dist > 1500 ? G.labels.chart : locate(cam.x, cam.z);
     if (where !== lastWhere) { whereOut.textContent = where; lastWhere = where; }
-    // instruments: heading turns the dial, altitude is the height above the disc
-    const hdg = Math.round(((-cam.yaw * 180 / Math.PI) % 360 + 360) % 360), alt = Math.round(cam.dist * Math.sin(cam.pitch)), pitch = Math.round(cam.pitch * 180 / Math.PI);
-    if (hdg !== instruments.hdg) { instruments.hdg = hdg; hdgOut.textContent = `${String(hdg).padStart(3, '0')}°`; dial?.setAttribute('transform', `rotate(${-hdg} 40 40)`); }
-    if (alt !== instruments.alt) { instruments.alt = alt; altOut.textContent = alt.toLocaleString(); }
-    if (pitch !== instruments.pitch) { instruments.pitch = pitch; pitchOut.textContent = `${pitch}°`; }
     drawMinimap();
   };
   const locate = (x, z) => {
@@ -267,8 +266,7 @@ function init() {
     const angle = Math.atan2(z, x);
     let arm = null, best = Infinity;
     for (const [id, deg] of Object.entries(G.arms)) { let d = angle - along(deg * Math.PI / 180, r); d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) < best) { best = Math.abs(d); arm = id; } }
-    const radii = G.stageRadii[arm], zone = radii.reduce((k, zz, i) => Math.abs(zz - r) < Math.abs(radii[k] - r) ? i : k, 0);
-    return `${G.labels.arms[arm]} · ${G.labels.zones[zone]}`;
+    return G.labels.arms[arm];
   };
 
   // the minimap is the disc from above: painted once, with the ship and its heading on top
@@ -331,7 +329,7 @@ function init() {
     lightZone(null);
     travel(home);
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-    if (restore) (items[stars.findIndex(s => s.el === back)] || back).focus({ preventScroll: true });
+    if (restore) back.focus({ preventScroll: true });
   };
   const indexOf = h => { try { return stars.findIndex(s => `#${s.el.dataset.world}` === decodeURIComponent(h)); } catch { return -1; } };
   const go = (i, how = 'push') => { history[how === 'push' ? 'pushState' : 'replaceState'](null, '', `#${stars[i].el.dataset.world}`); open(i); };
@@ -342,6 +340,7 @@ function init() {
   let dragging = false, moved = 0, pinch = null, downOn = null, panning = false;
   view.addEventListener('contextmenu', e => e.preventDefault());
   view.addEventListener('pointerdown', event => {
+    if (event.target.closest('[data-cluster]')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     view.setPointerCapture(event.pointerId);
     tween = null; vel.x = vel.z = 0; moved = 0; downOn = event.target.closest('.star');
@@ -401,6 +400,7 @@ function init() {
     it.addEventListener('pointerenter', () => hot(true)); it.addEventListener('pointerleave', () => hot(false));
     it.addEventListener('focus', () => hot(true)); it.addEventListener('blur', () => hot(false));
     s.el.addEventListener('pointerenter', () => hot(true)); s.el.addEventListener('pointerleave', () => hot(false));
+    s.el.addEventListener('focus', () => hot(true)); s.el.addEventListener('blur', () => hot(false));
     it.addEventListener('click', event => { event.preventDefault(); hot(false); if (i === current) return; go(i, current < 0 ? 'push' : 'replace'); });
   });
   // the scanner reads a planet before you commit to flying there
@@ -417,6 +417,29 @@ function init() {
   }
   const toggle = manifest?.querySelector('[data-manifest-toggle]');
   toggle?.addEventListener('click', () => { const open = !manifest.classList.contains('is-open'); manifest.classList.toggle('is-open', open); toggle.setAttribute('aria-expanded', String(open)); });
+  for (const group of manifest.querySelectorAll('.manifest__area')) {
+    group.addEventListener('toggle', () => {
+      const selected = manifest.querySelector('.manifest__area[open]')?.id;
+      for (const { label, members } of clusters) {
+        const muted = Boolean(selected && selected !== `area-${label.el.dataset.cluster}`);
+        label.el.classList.toggle('is-muted', muted);
+        for (const star of members) star.el.classList.toggle('is-muted', muted);
+      }
+    });
+  }
+  for (const link of section.querySelectorAll('[data-cluster]')) {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      const group = document.getElementById(`area-${link.dataset.cluster}`);
+      group.open = true;
+      if (getComputedStyle(toggle).display !== 'none') {
+        manifest.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+      group.querySelector('summary').focus({ preventScroll: true });
+      group.querySelector('summary').scrollIntoView({ block: 'nearest' });
+    });
+  }
   minimap.addEventListener('click', event => {
     const r = minimap.getBoundingClientRect();
     const x = (event.clientX - r.left - r.width / 2) * (MM / r.width) / mmScale, z = (event.clientY - r.top - r.height / 2) * (MM / r.height) / mmScale;
